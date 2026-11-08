@@ -7,6 +7,7 @@ import { ConnectionSwitcher } from '@/app/chat/sidebar/connection-switcher'
 import { ProfileSwitcher } from '@/app/chat/sidebar/profile-dropdown-switcher'
 import type { CommandCenterSection } from '@/app/command-center'
 import { toggleTerminalPane } from '@/app/right-sidebar/terminal/reveal-focus'
+import type { ChangeSessionCwd } from '@/app/session/hooks/use-cwd-actions'
 import { useApprovalModeStatusbarItem } from '@/app/shell/approval-mode-menu'
 import { ContextMeterDetail, ContextUsagePanel } from '@/app/shell/context-usage-panel'
 import { GatewayMenuPanel } from '@/app/shell/gateway-menu-panel'
@@ -14,6 +15,7 @@ import { useChangeWorkspaceItem } from '@/app/shell/hooks/use-change-workspace'
 import { useCompactConversation } from '@/app/shell/hooks/use-compact-conversation'
 import { useContextBreakdown } from '@/app/shell/hooks/use-context-breakdown'
 import { useFocusedSessionRow } from '@/app/shell/hooks/use-focused-session-row'
+import { useProjectPickerItems } from '@/app/shell/hooks/use-project-picker'
 import { useSystemResourcesStatusbarItem } from '@/app/shell/system-resources-statusbar'
 import { $paneVisible } from '@/components/pane-shell/tree/store'
 import { Badge } from '@/components/ui/badge'
@@ -89,7 +91,7 @@ const EMPTY_USAGE: UsageStats = { calls: 0, input: 0, output: 0, total: 0 }
 
 interface StatusbarItemsOptions {
   agentsOpen: boolean
-  changeSessionCwd: (cwd: string, sessionId?: string) => Promise<void>
+  changeSessionCwd: ChangeSessionCwd
   chatOpen: boolean
   commandCenterOpen: boolean
   extraLeftItems: readonly StatusbarItem[]
@@ -303,6 +305,14 @@ export function useStatusbarItems({
     focusedRowConnectionId,
     focusedRuntimeId,
     primaryFocused
+  })
+
+  const projectPickerItems = useProjectPickerItems({
+    activeSessionId,
+    busy,
+    changeSessionCwd,
+    currentCwd,
+    focused: { focusedRowConnectionId, focusedRuntimeId, primaryFocused }
   })
 
   const sessionStartedAt = resolveSessionTimerSince({
@@ -589,6 +599,7 @@ export function useStatusbarItems({
         label: projectName || (currentCwd ? pathLeaf(currentCwd) : undefined),
         menuItems: currentCwd
           ? [
+              ...projectPickerItems,
               changeWorkspaceItem,
               {
                 id: 'copy-workspace-path',
@@ -689,6 +700,7 @@ export function useStatusbarItems({
       openAgents,
       profileRailVisible,
       projectName,
+      projectPickerItems,
       sessionsShowing,
       subagentsFailed,
       subagentsRunning,

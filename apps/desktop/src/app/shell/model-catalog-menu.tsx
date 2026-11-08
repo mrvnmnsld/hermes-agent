@@ -23,6 +23,7 @@ import {
 
 import { PlanLimitLine, UsageLevelTag } from '@/components/model-picker'
 import { ProviderStatusChip } from '@/components/provider-status-chip'
+import { ProviderUsageLines } from '@/components/provider-usage-lines'
 import { Badge } from '@/components/ui/badge'
 import { Codicon } from '@/components/ui/codicon'
 import { DisclosureCaret } from '@/components/ui/disclosure-caret'
@@ -826,6 +827,8 @@ export function ModelCatalogMenu({
                 {/* Window plans past an allowance: one line saying what happens next (pay as you go
                     or wait for the reset) instead of a note on every row. */}
                 {!collapsed && !search ? <PlanLimitLine className="px-2 pb-1" provider={group.provider} /> : null}
+                {/* Anthropic / Codex / OpenRouter: what is left on the login, under the heading. */}
+                {!collapsed && !search ? <ProviderUsageLines className="px-2 pb-1" provider={group.provider} /> : null}
                 {!collapsed &&
                   group.families.map((family, familyIdx) => (
                     <Fragment key={`${group.provider.slug}:${family.id}`}>

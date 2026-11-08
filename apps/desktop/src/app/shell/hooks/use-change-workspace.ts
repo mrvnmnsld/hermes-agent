@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import type { ChangeSessionCwd } from '@/app/session/hooks/use-cwd-actions'
 import { useI18n } from '@/i18n'
 import { selectDesktopPaths } from '@/lib/desktop-fs'
 import { displayPath } from '@/lib/display-path'
@@ -22,7 +23,7 @@ interface FocusedTarget {
  * runs: the backend refuses `session.cwd.set` then.
  */
 export function useChangeWorkspaceItem(
-  changeSessionCwd: (cwd: string, sessionId?: string) => Promise<void>,
+  changeSessionCwd: ChangeSessionCwd,
   currentCwd: string,
   busy: boolean,
   { focusedRowConnectionId, focusedRuntimeId, primaryFocused }: FocusedTarget

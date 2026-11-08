@@ -166,17 +166,26 @@ export function ProjectDialog() {
       // The arm is consumed exactly on SUCCESS (before the close): a failed
       // create leaves the dialog open for a retry that still lands where it
       // was dropped; the open-state effect discards it on cancel/teardown.
+      //
+      // Picker-originated creates (onCreated set): skip use:true and
+      // enterProject so the picker can decide scope after confirming re-home.
+      // This avoids selecting/entering the project before the cwd RPC succeeds.
+      const pickerOrigin = Boolean(state?.onCreated)
       await runSubmit(async () => {
         const created = await createProject({
           dropPlacement,
           folders,
           idea: idea.trim() || undefined,
           name: trimmed,
-          use: true
+          use: !pickerOrigin
         })
 
         if (created) {
-          enterProject(created.id)
+          if (!pickerOrigin) {
+            enterProject(created.id)
+          }
+
+          state?.onCreated?.(created)
         }
       }, clearNewProjectDropPlacement)
     }

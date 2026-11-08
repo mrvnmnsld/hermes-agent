@@ -1410,11 +1410,16 @@ export interface ProjectDialogState {
   mode: 'add-folder' | 'create' | 'rename'
   projectId?: string
   name?: string
+  /** Set by picker-originated creates; the dialog calls this with the created
+   *  project on success, so the picker can confirm re-home with the exact result
+   *  rather than inferring from the global list delta.
+   *  NOT called on cancel or failure — the picker treats no-call as cancel. */
+  onCreated?: (project: ProjectInfo) => void
 }
 
 export const $projectDialog = atom<null | ProjectDialogState>(null)
 
-export function openProjectCreate(): void {
+export function openProjectCreate(onCreated?: (project: ProjectInfo) => void): void {
   if ($projectsRpcAvailable.get() === false) {
     notify({
       kind: 'warning',
@@ -1424,7 +1429,7 @@ export function openProjectCreate(): void {
     return
   }
 
-  $projectDialog.set({ mode: 'create' })
+  $projectDialog.set({ mode: 'create', ...(onCreated && { onCreated }) })
 }
 
 /** Clear the armed "New project" drag placement — on dialog close, so a later

@@ -65,6 +65,7 @@ export const BROWSER_BRIDGE_STUBS = {
     custom: false,
     minimize: () => { throw browserUnsupported('Native window controls') },
     toggleMaximize: () => { throw browserUnsupported('Native window controls') },
+    toggleFullscreen: () => { throw browserUnsupported('Native window controls') },
     close: () => { throw browserUnsupported('Native window controls') }
   },
   getPathForFile: () => '',

@@ -89,6 +89,7 @@ contextBridge.exposeInMainWorld('hermesDesktop', {
     custom: customWindowControlsEnabled(),
     minimize: () => ipcRenderer.send('hermes:window-control', 'minimize'),
     toggleMaximize: () => ipcRenderer.send('hermes:window-control', 'toggle-maximize'),
+    toggleFullscreen: () => ipcRenderer.send('hermes:window-control', 'toggle-fullscreen'),
     close: () => ipcRenderer.send('hermes:window-control', 'close')
   },
   wakeIndicator: {

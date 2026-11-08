@@ -317,6 +317,19 @@ registry.registerMany([
       run: toggleLayoutEditMode
     } satisfies KeybindContribution
   },
+  // Whole-window fullscreen (the title bar and OS chrome go away). F11 is the Windows/Linux
+  // convention; rebindable like every keybind. Routed through the window-control bridge so
+  // the main process owns the window state and the renderer just follows the enter/leave events.
+  {
+    id: 'view.fullscreen',
+    area: KEYBINDS_AREA,
+    data: {
+      id: 'view.fullscreen',
+      label: 'Toggle full screen',
+      defaults: ['f11'],
+      run: () => window.hermesDesktop?.windowControls?.toggleFullscreen()
+    } satisfies KeybindContribution
+  },
   paletteToggle({
     id: 'layout.editMode',
     label: 'Toggle layout edit mode',

@@ -1,7 +1,9 @@
 import { type MutableRefObject, useCallback } from 'react'
 
 import { translateNow, useI18n } from '@/i18n'
+import { activeGateway } from '@/store/gateway'
 import { notify, notifyError } from '@/store/notifications'
+import { $activeGatewayProfile } from '@/store/profile'
 import {
   $currentCwd,
   $newChatWorkspaceTargetGeneration,
@@ -11,6 +13,20 @@ import {
   setNewChatWorkspaceTarget
 } from '@/store/session'
 import type { SessionRuntimeInfo } from '@/types/hermes'
+
+export interface CwdChangeResult {
+  status: 'applied' | 'refused' | 'staged'
+}
+
+export interface CwdChangeGuard {
+  isCurrent: () => boolean
+  requireApplied?: boolean
+}
+
+// Void remains accepted for legacy callers; picker success requires explicit applied.
+export type ChangeSessionCwd = (
+  cwd: string, sessionId?: string, guard?: CwdChangeGuard
+) => Promise<CwdChangeResult | void>
 
 interface CwdActionsOptions {
   activeSessionIdRef: MutableRefObject<string | null>
@@ -54,12 +70,16 @@ export function useCwdActions({ activeSessionIdRef, onSessionRuntimeInfo, reques
   )
 
   const changeSessionCwd = useCallback(
-    async (cwd: string, targetSessionId?: string) => {
+    async (cwd: string, targetSessionId?: string, guard?: CwdChangeGuard): Promise<CwdChangeResult> => {
       const trimmed = cwd.trim()
 
-      if (!trimmed) {
-        return
+      if (!trimmed || (guard && !guard.isCurrent())) {
+        return { status: 'refused' }
       }
+
+      const gateway = activeGateway()
+      const profile = $activeGatewayProfile.get()
+      const current = () => activeGateway() === gateway && $activeGatewayProfile.get() === profile && (!guard || guard.isCurrent())
 
       // A focused tile names its own runtime id. Otherwise the ref, not the
       // closure-captured prop: this hook's consumers are memoized on a stable
@@ -85,8 +105,10 @@ export function useCwdActions({ activeSessionIdRef, onSessionRuntimeInfo, reques
           })
 
           if ($newChatWorkspaceTargetGeneration.get() !== workspaceGeneration || activeSessionIdRef.current) {
-            return
+            return { status: 'refused' }
           }
+
+          if (!current()) {return { status: 'refused' }}
 
           // Adopt the backend's normalized cwd so the persisted workspace and
           // branch stay consistent with what the agent will use.
@@ -97,12 +119,12 @@ export function useCwdActions({ activeSessionIdRef, onSessionRuntimeInfo, reques
 
           setCurrentBranch(info.branch || '')
         } catch {
-          if ($newChatWorkspaceTargetGeneration.get() === workspaceGeneration && !activeSessionIdRef.current) {
+          if (current() && $newChatWorkspaceTargetGeneration.get() === workspaceGeneration && !activeSessionIdRef.current) {
             setCurrentBranch('')
           }
         }
 
-        return
+        return { status: 'applied' }
       }
 
       try {
@@ -111,22 +133,27 @@ export function useCwdActions({ activeSessionIdRef, onSessionRuntimeInfo, reques
           cwd: trimmed
         })
 
-        if (primary) {
+        // Publish the primary-scoped readout only if the session we just moved is
+        // STILL the active primary. A late response for a session superseded by a
+        // focus/runtime change must not repaint `$currentCwd` with its own cwd.
+        if (current() && activeSessionIdRef.current === sessionId) {
           setCurrentCwd(info.cwd || trimmed)
           setCurrentBranch(info.branch || '')
         }
 
-        onSessionRuntimeInfo?.(sessionId, { branch: info.branch || '', cwd: info.cwd || trimmed })
+        if (current()) {onSessionRuntimeInfo?.(sessionId, { branch: info.branch || '', cwd: info.cwd || trimmed })}
+
+        return { status: current() ? 'applied' : 'refused' }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
 
         if (!message.includes('unknown method')) {
           notifyError(cwdChangeError(err), copy.cwdChangeFailed)
 
-          return
+          return { status: 'refused' }
         }
 
-        if (primary) {
+        if (!guard?.requireApplied && current() && primary && activeSessionIdRef.current === sessionId) {
           setCurrentCwd(trimmed)
           setCurrentBranch('')
         }
@@ -136,6 +163,8 @@ export function useCwdActions({ activeSessionIdRef, onSessionRuntimeInfo, reques
           title: copy.cwdStagedTitle,
           message: copy.cwdStagedMessage
         })
+
+        return { status: 'staged' }
       }
     },
     [activeSessionIdRef, copy, onSessionRuntimeInfo, requestGateway]

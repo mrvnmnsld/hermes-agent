@@ -4,6 +4,7 @@ import { isValidElement, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { ChangeSessionCwd } from '@/app/session/hooks/use-cwd-actions'
 import { group } from '@/components/pane-shell/tree/model'
 import { $layoutTree, noteActiveTreeGroup } from '@/components/pane-shell/tree/store'
 import { en } from '@/i18n/en'
@@ -13,6 +14,7 @@ import { usageContextLabel } from '@/lib/statusbar'
 import { $freeTierStatus } from '@/store/free-tier'
 import { INTERFACE_MODES, setInterfaceMode } from '@/store/interface-mode'
 import { markOnboardingDecided, setOnboardingSurfaceActive } from '@/store/onboarding-presence'
+import { $projectDialog, $projects } from '@/store/projects'
 import {
   $connection,
   $currentCwd,
@@ -85,7 +87,7 @@ function focusPane(storedId: null | string): void {
 
 const wrapper = ({ children }: { children: ReactNode }) => <MemoryRouter>{children}</MemoryRouter>
 
-function renderStatusbarItems(changeSessionCwd: (cwd: string, sessionId?: string) => Promise<void> = async () => {}) {
+function renderStatusbarItems(changeSessionCwd: ChangeSessionCwd = async () => {}) {
   const { result } = renderHook(
     () =>
       useStatusbarItems({
@@ -110,7 +112,7 @@ function renderStatusbarItems(changeSessionCwd: (cwd: string, sessionId?: string
   return result.current
 }
 
-function workspaceMenu(changeSessionCwd?: (cwd: string, sessionId?: string) => Promise<void>) {
+function workspaceMenu(changeSessionCwd?: ChangeSessionCwd) {
   const workspace = renderStatusbarItems(changeSessionCwd).leftStatusbarItems.find(item => item.id === 'workspace-cwd')
 
   return (workspace?.menuItems ?? []).filter(item => !item.hidden)
@@ -123,6 +125,8 @@ function workspaceMenuIds(): string[] {
 afterEach(() => {
   $connection.set(null)
   $currentCwd.set('')
+  $projectDialog.set(null)
+  $projects.set([])
   $sessionTiles.set([])
   focusPane(null)
   $selectedStoredSessionId.set(null)
@@ -256,6 +260,66 @@ describe('statusbar workspace menu — change working directory', () => {
 
     $sessions.set([{ connection_id: 'conn-remote', cwd: '/opt/data', id: 'tile' }] as never)
     expect(workspaceMenuIds()).not.toContain('change-workspace-path')
+  })
+})
+
+describe('statusbar workspace menu — project picker rows', () => {
+  it('lists non-archived projects and the native create dialog opens from the row', () => {
+    $currentCwd.set('/opt/data')
+    $projects.set([
+      {
+        archived: false,
+        board_slug: null,
+        color: null,
+        created_at: 1,
+        description: null,
+        folders: [{ added_at: 1, is_primary: true, label: null, path: '/opt/data' }],
+        icon: null,
+        id: 'p_1',
+        name: 'Alpha',
+        primary_path: '/opt/data',
+        slug: 'alpha'
+      }
+    ] as never)
+
+    const ids = workspaceMenuIds()
+    expect(ids).toContain('project-p_1')
+    expect(ids).toContain('open-project-folder')
+    expect(ids).toContain('create-project')
+
+    workspaceMenu().find(item => item.id === 'create-project')?.onSelect?.()
+    expect($projectDialog.get()?.mode).toBe('create')
+  })
+
+  it('hides the project picker rows once the workspace menu loses the focus gate', () => {
+    const changeSessionCwd = vi.fn(async () => {})
+    $currentCwd.set('/opt/data')
+    $projects.set([
+      {
+        archived: false,
+        board_slug: null,
+        color: null,
+        created_at: 1,
+        description: null,
+        folders: [{ added_at: 1, is_primary: true, label: null, path: '/opt/data' }],
+        icon: null,
+        id: 'p_1',
+        name: 'Alpha',
+        primary_path: '/opt/data',
+        slug: 'alpha'
+      }
+    ] as never)
+
+    // A focused tile on another gateway: the cwd cannot move from here.
+    $selectedStoredSessionId.set('primary-local')
+    $sessionTiles.set([
+      { ownerRoute: { connectionId: 'conn-remote', mode: 'remote', profile: 'default' }, storedSessionId: 'tile-remote' }
+    ])
+    focusPane('tile-remote')
+    $sessions.set([{ connection_id: 'conn-remote', cwd: '/srv/x', id: 'tile-remote' }] as never)
+
+    const menu = workspaceMenu(changeSessionCwd)
+    expect(menu.some(item => item.id === 'project-p_1')).toBe(false)
   })
 })
 

@@ -1,4 +1,4 @@
-export type WindowControlAction = 'close' | 'minimize' | 'toggle-maximize'
+export type WindowControlAction = 'close' | 'minimize' | 'toggle-maximize' | 'toggle-fullscreen'
 
 interface CustomWindowControlsOptions {
   env?: NodeJS.ProcessEnv
@@ -39,11 +39,21 @@ interface ControllableWindow {
   maximize?: () => void
   minimize?: () => void
   unmaximize?: () => void
+  isFullScreen?: () => boolean
+  setFullScreen?: (flag: boolean) => void
 }
 
 export function performWindowControl(win: ControllableWindow | null | undefined, action: string): boolean {
   if (!win || win.isDestroyed?.()) {
     return false
+  }
+
+  if (action === 'toggle-fullscreen' && win.setFullScreen && win.isFullScreen) {
+    // Fullscreen is a whole-window state (no titlebar, no OS chrome). Electron emits
+    // enter-/leave-full-screen, so the renderer's titlebar inset follows the toggle.
+    win.setFullScreen(!win.isFullScreen())
+
+    return true
   }
 
   if (action === 'minimize' && win.minimize) {

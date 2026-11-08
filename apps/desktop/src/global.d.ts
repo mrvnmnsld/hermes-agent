@@ -129,6 +129,7 @@ declare global {
         custom: boolean
         minimize: () => void
         toggleMaximize: () => void
+        toggleFullscreen: () => void
         close: () => void
       }
       wakeIndicator?: {

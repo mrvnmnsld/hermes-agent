@@ -1,4 +1,4 @@
-import { act, cleanup, render, waitFor } from '@testing-library/react'
+import { act, cleanup, render, renderHook, waitFor } from '@testing-library/react'
 import type { MutableRefObject } from 'react'
 import { useEffect } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -39,6 +39,33 @@ function Harness({
 
   return null
 }
+
+describe('useCwdActions authoritative admission', () => {
+  it.each([
+    [new Error('refused'), 'refused'],
+    [Object.assign(new Error('busy'), { data: { reason: 'session_busy' } }), 'refused'],
+    [new Error('owner unavailable'), 'refused'],
+    [new Error('unknown method session.cwd.set'), 'staged']
+  ])('returns refusal/staging rather than success for %s', async (error, status) => {
+    const requestGateway = vi.fn().mockRejectedValue(error)
+    const { result } = renderHook(() => useCwdActions({ activeSessionIdRef: { current: 'a' }, requestGateway }))
+    expect(await result.current.changeSessionCwd('/new')).toEqual({ status })
+  })
+
+  it('does not repaint a later primary after a late successful RPC', async () => {
+    const pending = deferred<never>()
+    const ref = { current: 'a' }
+    setCurrentCwd('/a')
+    const requestGateway = vi.fn(() => pending.promise)
+    const { result } = renderHook(() => useCwdActions({ activeSessionIdRef: ref, requestGateway }))
+    const change = result.current.changeSessionCwd('/new')
+    ref.current = 'b'
+    setCurrentCwd('/b')
+    pending.resolve({ cwd: '/new', branch: 'main' } as never)
+    await change
+    expect($currentCwd.get()).toBe('/b')
+  })
+})
 
 describe('useCwdActions session target', () => {
   afterEach(() => {
@@ -116,7 +143,7 @@ describe('useCwdActions draft workspace target', () => {
     )
     await waitFor(() => expect(handle).not.toBeNull())
 
-    let pendingChange!: Promise<void>
+    let pendingChange!: ReturnType<CwdActionsHandle['changeSessionCwd']>
 
     await act(async () => {
       pendingChange = handle!.changeSessionCwd('/stale-workspace')
