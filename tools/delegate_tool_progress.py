@@ -325,6 +325,9 @@ class _ChildProgressRelay:
         for src, dst in (("session_id", "child_session_id"), ("delegation_id", "delegation_id")):
             if self.session_ref.get(src):
                 kw[dst] = str(self.session_ref[src])
+        for key in ("worker", "name", "provider"):
+            if self.session_ref.get(key):
+                kw[key] = str(self.session_ref[key])
         kw["tool_count"] = self.tool_count
         return kw
 

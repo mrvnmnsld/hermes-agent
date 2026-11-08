@@ -45,6 +45,7 @@ from agent.provider_base import ProviderBase
 RESERVED_TASK_PARAMETERS = frozenset({
     "goal", "context", "index", "output_schema", "images", "group", "role", "toolsets",
     "acp_command", "acp_args", "provider", "model", "base_url", "api_key", "api_mode",
+    "worker", "name",
 })
 
 #: Keys a route may carry; anything else in a provider's answer is ignored.

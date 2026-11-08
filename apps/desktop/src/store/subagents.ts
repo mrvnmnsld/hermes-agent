@@ -22,6 +22,12 @@ export interface SubagentProgress {
    *  so concurrent/nested batches never merge into one group. */
   delegationId?: string
   model?: string
+  /** Worker profile that ran this task (e.g. architect, ux), when the delegation named one. */
+  worker?: string
+  /** Short task name (3-4 words) from the delegation; the row falls back to the goal. */
+  name?: string
+  /** Child's provider id; with `model` it reads as `provider/model` on the row. */
+  provider?: string
   status: SubagentStatus
   taskCount: number
   taskIndex: number
@@ -223,6 +229,9 @@ function toProgress(payload: SubagentPayload, prev: SubagentProgress | undefined
     sessionId: str(payload.child_session_id) || prev?.sessionId,
     delegationId: str(payload.delegation_id) || prev?.delegationId,
     model: str(payload.model) || prev?.model,
+    worker: str(payload.worker) || prev?.worker,
+    name: str(payload.name) || prev?.name,
+    provider: str(payload.provider) || prev?.provider,
     status,
     taskCount: num(payload.task_count) ?? prev?.taskCount ?? 1,
     taskIndex: num(payload.task_index) ?? prev?.taskIndex ?? 0,

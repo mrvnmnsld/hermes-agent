@@ -2436,6 +2436,9 @@ export interface SubagentSnapshot {
   goal?: string | null
   delegation_id?: string | null
   model?: string | null
+  worker?: string | null
+  name?: string | null
+  provider?: string | null
   started_at?: number | null
   status?: SubagentStatus | null
   tool_count?: number | null
@@ -6015,6 +6018,9 @@ export interface SubagentEventPayload {
   subagent_id?: string | null
   parent_id?: string | null
   child_session_id?: string | null
+  worker?: string | null
+  name?: string | null
+  provider?: string | null
   delegation_id?: string | null
   depth?: number | null
   model?: string | null

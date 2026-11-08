@@ -12,6 +12,9 @@ import { useSessionSlice } from '@/lib/use-session-slice'
 import { $subagentsBySession, type SubagentProgress } from '@/store/subagents'
 
 import { SubagentControls } from './subagent-controls'
+import { SubagentProgressBar } from './subagent-progress-bar'
+import { subagentRollup } from './subagent-rollup'
+import { subagentRowLabel } from './subagent-row-label'
 import { SubagentTranscript } from './subagent-transcript'
 
 interface SubagentSectionProps {
@@ -55,7 +58,7 @@ export function SubagentSection({ sessionId }: SubagentSectionProps) {
       trailingVisible
     >
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-xs text-(--ui-text-primary)">{item.goal}</span>
+        <span className="block truncate text-xs text-(--ui-text-primary)">{subagentRowLabel(item)}</span>
         <span className="block truncate text-[0.68rem] text-(--ui-text-tertiary)">
           {item.stream.at(-1)?.text || (item.status === 'queued' ? t.agents.queued : t.agents.waitingActivity)}
         </span>
@@ -64,6 +67,8 @@ export function SubagentSection({ sessionId }: SubagentSectionProps) {
   )
 
   const detail = live.find(item => item.id === selected)
+  // Finished workers stay in `items` until the next turn, so the bar counts the whole wave.
+  const bar = <SubagentProgressBar label={t.statusStack.subagents(live.length)} rollup={subagentRollup(items)} />
 
   return (
     <div className="composer-no-drag min-w-0" data-slot="composer-subagents">
@@ -77,7 +82,9 @@ export function SubagentSection({ sessionId }: SubagentSectionProps) {
         }
         icon={<Codicon className="text-(--ui-purple)" name="agent" size="0.8rem" />}
         label={t.statusStack.subagents(live.length)}
+        preview={bar}
       >
+        {bar}
         <div className="max-h-[25vh] overflow-y-auto overscroll-y-auto">{live.map(row)}</div>
         {detail && (
           <div

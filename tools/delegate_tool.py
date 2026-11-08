@@ -49,6 +49,7 @@ from tools.delegate_tool_registry import (
 )
 from tools.delegate_tool_tasks import (
     _MAX_TASK_IMAGES, _coerce_task_images, _coerce_task_schemas, _normalize_task_images, _normalize_task_list,
+    short_task_name,
 )
 from tools.delegate_tool_tuning import pin_child_service_tier
 from tools.delegate_tool_toolsets import (
@@ -500,6 +501,16 @@ def _build_children(
             _ident_ref = getattr(child, "_progress_identity_ref", None)
             if isinstance(_ident_ref, dict):
                 _ident_ref["delegation_id"] = live_deleg_id
+        # Display identity for UIs: who (worker, else the backend route's label), on what, doing what.
+        worker = str(t.get("worker") or route.label or t.get("jgmd_role") or "").strip()[:64] or None
+        child._delegation_worker = worker
+        child._delegation_name = short_task_name(t.get("name"), t["goal"])
+        _ident_ref = getattr(child, "_progress_identity_ref", None)
+        if isinstance(_ident_ref, dict):
+            for key, value in (("worker", worker), ("name", child._delegation_name),
+                               ("provider", getattr(child, "provider", None))):
+                if value:
+                    _ident_ref[key] = str(value)
         children.append((i, t, child))
     return children, None
 
@@ -806,6 +817,17 @@ DELEGATE_TASK_SCHEMA = {
                             "string",
                             "Background THIS child needs: file paths, error messages, constraints. Each child "
                             "sees only its own context — repeat shared background in every task that needs it.",
+                        ),
+                        "worker": _p(
+                            "string",
+                            "Optional name of the worker profile doing this task (e.g. architect, ux, senior). "
+                            "Shown on the subagent row in the Desktop app so you can see who did what.",
+                        ),
+                        "name": _p(
+                            "string",
+                            "Optional short task name, 3 to 4 words (e.g. 'Check live deploy status'). "
+                            "Shown on the subagent row in the Desktop app.",
+                            maxLength=40,
                         ),
                         "output_schema": _p(
                             "object",

@@ -18,6 +18,20 @@ _TEMPLATE_MARKER_RE = re.compile(
 )
 _MIN_BATCH_GOAL_LEN = 10
 
+_NAME_MAX_CHARS = 40
+_NAME_MAX_WORDS = 4
+
+
+def short_task_name(name: Any, goal: str) -> str:
+    """Short display name for a task: the model's ``name``, else the first words of ``goal`` (markdown stripped)."""
+    text = name if isinstance(name, str) and name.strip() else goal
+    text = re.sub(r"[`*#>\[\]()]", " ", text or "")
+    words = text.split()
+    if not (isinstance(name, str) and name.strip()):
+        words = words[:_NAME_MAX_WORDS]
+    return " ".join(words)[:_NAME_MAX_CHARS].rstrip()
+
+
 def _recover_tasks_from_json_string(tasks: Any) -> tuple[Optional[list[dict[str, Any]]], Optional[str]]:
     """``(parsed_list, None)`` for a JSON-array string, ``(None, error)`` for a bad string, ``(None, None)`` otherwise."""
     if not isinstance(tasks, str):

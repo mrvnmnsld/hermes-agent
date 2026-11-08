@@ -642,6 +642,9 @@ class SubagentEventPayload(Payload):
     subagent_id: str | None = None
     parent_id: str | None = None
     child_session_id: str | None = None
+    worker: str | None = None
+    name: str | None = None
+    provider: str | None = None
     delegation_id: str | None = None
     depth: int | None = None
     model: str | None = None
