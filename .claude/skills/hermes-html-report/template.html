@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPORT TITLE</title>
+<style>
+  :root { --bg:#0e1116; --panel:#161b22; --line:#262d36; --text:#e6edf3; --mute:#8b96a3; --accent:#7cc4ff;
+          --ok:#3fb950; --chg:#d29922; --open:#58a6ff; --bad:#f85149; --skip:#6e7681; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 16px 64px; }
+  .eyebrow { color:var(--accent); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+  h1 { font-size:28px; margin:4px 0 8px; }
+  .lede { color:var(--mute); margin:0 0 20px; }
+  .pills { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .pill { border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:12px; }
+  .pill.ok{color:var(--ok)} .pill.chg{color:var(--chg)} .pill.open{color:var(--open)} .pill.bad{color:var(--bad)} .pill.skip{color:var(--skip)}
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; }
+  .card h2 { font-size:17px; margin:6px 0; }
+  .id { color:var(--mute); font-size:12px; }
+  .why { color:var(--mute); margin:0 0 12px; }
+  .opts { display:grid; gap:8px; }
+  .opt { text-align:left; background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:8px;
+         padding:10px 12px; font:inherit; cursor:pointer; min-height:44px; }
+  .opt:hover { border-color:var(--accent); }
+  .opt:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .opt.sel { border-color:var(--accent); background:#12263a; }
+  .opt small { display:block; color:var(--mute); }
+  textarea[data-other] { width:100%; margin-top:8px; min-height:56px; background:var(--bg); color:var(--text);
+         border:1px solid var(--line); border-radius:8px; padding:8px; font:inherit; }
+  code, pre { font-family:ui-monospace, Consolas, monospace; font-size:13px; }
+  pre { background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; }
+  button#decide-copy { background:var(--accent); color:#06121f; border:0; border-radius:8px; padding:10px 16px; font:inherit; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; } th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  .note { color:var(--mute); font-size:13px; }
+  footer { color:var(--mute); font-size:12px; margin-top:32px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">EYEBROW</div>
+  <h1>TITLE</h1>
+  <p class="lede">ONE SENTENCE ANSWER FIRST.</p>
+  <div class="pills"><span class="pill ok">1 done</span><span class="pill open">2 waiting</span></div>
+
+  <!-- Report section: repeat or delete -->
+  <section class="card">
+    <div class="id">S1</div>
+    <h2>SECTION TITLE</h2>
+    <p class="why">WHY IT MATTERS.</p>
+    <p>FACTS. Use <code>paths</code> and <code>commands</code>. Label guesses as assumption.</p>
+  </section>
+
+  <!-- Choice card: repeat per question, unique data-q. Delete all if report only. -->
+  <section class="card" data-q="q1">
+    <div class="id">Q1</div>
+    <h2>QUESTION</h2>
+    <p class="why">WHY ASKED.</p>
+    <div class="opts">
+      <button type="button" class="opt" data-choice="a">A (recommended)<small>Detail.</small></button>
+      <button type="button" class="opt" data-choice="b">B<small>Detail.</small></button>
+      <button type="button" class="opt" data-choice="other">Other</button>
+    </div>
+    <textarea data-other placeholder="Type your own answer"></textarea>
+  </section>
+
+  <section class="card" id="decide-block">
+    <h2>Your picks</h2>
+    <pre id="decide-json">{}</pre>
+    <button type="button" id="decide-copy">Copy JSON</button>
+  </section>
+
+  <footer>Facts: git, files, named commands. Anything else is assumption.</footer>
+</main>
+<script>
+(function () {
+  var KEY = "hermes-decide:" + location.pathname.split("/").pop();
+  var cards = document.querySelectorAll("[data-q]");
+  var out = document.getElementById("decide-json");
+  var state = { page: KEY.slice(14), at: "", answers: {} };
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved && saved.answers) state.answers = saved.answers; } catch (e) {}
+
+  function render() {
+    state.at = new Date().toISOString();
+    out.textContent = JSON.stringify(state, null, 2);
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  cards.forEach(function (card) {
+    var id = card.getAttribute("data-q");
+    var opts = card.querySelectorAll(".opt");
+    var box = card.querySelector("[data-other]");
+    var a = state.answers[id] || { choice: "", other: "" };
+    state.answers[id] = a;
+    opts.forEach(function (b) { b.classList.toggle("sel", b.getAttribute("data-choice") === a.choice); });
+    box.value = a.other || "";
+    opts.forEach(function (b) {
+      b.addEventListener("click", function () {
+        opts.forEach(function (o) { o.classList.remove("sel"); });
+        b.classList.add("sel");
+        a.choice = b.getAttribute("data-choice");
+        render();
+      });
+    });
+    box.addEventListener("input", function () { a.other = box.value; render(); });
+  });
+  document.getElementById("decide-copy").addEventListener("click", function () {
+    var done = function () { var b = document.getElementById("decide-copy"); b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy JSON"; }, 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(out.textContent).then(done, function () {});
+  });
+  render();
+})();
+</script>
+</body>
+</html>
