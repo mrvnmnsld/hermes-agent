@@ -140,3 +140,48 @@ describe('a multi-question clarify set is one form', () => {
     }
   }
 })
+
+describe('a long clarify set is one long scroll', () => {
+  const MANY = Array.from({ length: 12 }, (_, i) => `option-${i + 1}`)
+
+  const LONG = [
+    ...Array.from({ length: 7 }, (_, i) => ({
+      choices: [`a${i}`, `b${i}`],
+      multiSelect: false,
+      qid: `q${i}`,
+      question: `Question number ${i}?`
+    })),
+    { choices: MANY.map((c, i) => (i === 3 ? `${c} (Recommended)` : c)), multiSelect: false, qid: 'q7', question: 'Pick one of many?' }
+  ]
+
+  it('renders all 8 questions and all 12 choices together, with no Next/Back, Other row and Recommended kept', () => {
+    renderSet(LONG)
+
+    for (const { question } of LONG) { expect(screen.getByText(question)).toBeTruthy() }
+
+    const rows = screen
+      .getAllByRole('group')
+      .flatMap(group => [...group.querySelectorAll('button')].map(row => row.textContent ?? ''))
+
+    expect(rows).toHaveLength(7 * 2 + MANY.length)
+
+    for (const choice of MANY) { expect(rows.some(text => text.endsWith(choice) || text.includes(`${choice} (Recommended)`))).toBe(true) }
+
+    expect(screen.getAllByText('(Recommended)')).toHaveLength(1)
+    expect(screen.getAllByPlaceholderText('Other (type your answer)')).toHaveLength(LONG.length)
+    expect(screen.queryByRole('button', { name: /^(next|back|previous)$/i })).toBeNull()
+    expect(screen.getAllByRole('group')).toHaveLength(8)
+  })
+
+  it('sends every answer at once from the single confirm', async () => {
+    const request = renderSet(LONG)
+
+    fireEvent.click(screen.getByText('a0'))
+    fireEvent.click(screen.getByText('option-12'))
+    fireEvent.click(screen.getByRole('button', { name: /Confirm and continue/ }))
+
+    await waitFor(() => expect(locks(request)).toHaveLength(8))
+    expect(locks(request)[0]).toEqual(['q0', 'a0'])
+    expect(locks(request)[7]).toEqual(['q7', 'option-12'])
+  })
+})

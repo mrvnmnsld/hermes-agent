@@ -1,5 +1,5 @@
 export type WindowAcceleratorAction =
-  'close-tab' | 'reload' | 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'swallow' | 'ignore'
+  'close-tab' | 'reload' | 'toggle-fullscreen' | 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'swallow' | 'ignore'
 
 /**
  * How long after the window gains focus a Close Tab / Reload keyDown is
@@ -41,6 +41,13 @@ export function windowAcceleratorAction(
 
   const key = String(input.key || '')
   const folded = key.toLowerCase()
+
+  // F11 is the Windows/Linux fullscreen key. macOS has no F11 convention here
+  // (Show Desktop) and its View menu already carries Ctrl+Cmd+F.
+  if (key === 'F11' && !isMac && !input.control && !input.alt && !input.meta && !input.shift) {
+    return input.isAutoRepeat ? 'swallow' : 'toggle-fullscreen'
+  }
+
   const accel = Boolean((isMac ? input.meta : input.control) && !input.alt)
 
   if (!accel) {

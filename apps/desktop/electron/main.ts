@@ -670,7 +670,7 @@ import { windowAcceleratorAction } from './window-accelerator'
 import { enumerateWindowsFrontToBack, enumerationFailed, readWindowBelow } from './window-below'
 import { bindWindowChromeEvents } from './window-chrome-events'
 import { appliedPrimaryWindowRoute, WindowConnectionRouteRegistry } from './window-connection-route'
-import { registerWindowControlIpc, windowControlState } from './window-controls'
+import { performWindowControl, registerWindowControlIpc, windowControlState } from './window-controls'
 import { revealAction, shouldFocusToTakeKeyboard } from './window-focus-policy'
 import { isAppSized, registerWindowSizing } from './window-growth'
 import { windowMenuTemplate } from './window-menu'
@@ -6494,6 +6494,19 @@ function installPreviewShortcut(window) {
 
   window.webContents.on('before-input-event', (event, input) => {
     const action = windowAcceleratorAction(input, IS_MAC, Date.now() - focusedAt)
+
+    // F11 toggles fullscreen on Windows/Linux (no app menu there). Claimed here
+    // so it also works while the composer has focus. Not for non-fullscreenable
+    // windows (HUD, overlays).
+    if (action === 'toggle-fullscreen') {
+      event.preventDefault()
+
+      if (window.isFullScreenable()) {
+        performWindowControl(window, 'toggle-fullscreen')
+      }
+
+      return
+    }
 
     // A ⌘W/⌘R that auto-repeats or lands right as focus arrives belongs to
     // the app that just lost focus (#105498). Claim it so the renderer's

@@ -136,3 +136,11 @@ test('keeps zoom on auto-repeat and inside the focus grace window (holding Ctrl+
   assert.equal(windowAcceleratorAction(chord({ key: '=', control: true, isAutoRepeat: true }), false), 'zoom-in')
   assert.equal(windowAcceleratorAction(chord({ key: '-', control: true }), false, 0), 'zoom-out')
 })
+
+test('F11 toggles fullscreen on Windows/Linux only, unmodified and once per press', () => {
+  assert.equal(windowAcceleratorAction(chord({ key: 'F11' }), false), 'toggle-fullscreen')
+  assert.equal(windowAcceleratorAction(chord({ key: 'F11', isAutoRepeat: true }), false), 'swallow')
+  assert.equal(windowAcceleratorAction(chord({ key: 'F11', type: 'keyUp' }), false), 'ignore')
+  assert.equal(windowAcceleratorAction(chord({ key: 'F11', control: true }), false), 'ignore')
+  assert.equal(windowAcceleratorAction(chord({ key: 'F11' }), true), 'ignore')
+})
