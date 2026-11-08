@@ -315,6 +315,9 @@ gateway:
     none_connected: "Geen MCP-bedieners verbind nie."
     tools_available: "\n🔧 {tools} gereedskap beskikbaar van {servers} bediener(s)"
     failed: "❌ MCP-herlaai het misluk: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **Vaardighede herlaai**\n"
     no_new: "Geen nuwe vaardighede opgespoor nie."
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ Verwyder: {names}"
     tools_available: "🔧 {tools} gereedskap beskikbaar van {servers} bediener(s)"
     agent_updated: "✅ Agent opgedateer — {count} gereedskap beskikbaar"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 Herlaai vaardighede..."
     total: "📚 {count} vaardigheid(e) beskikbaar"

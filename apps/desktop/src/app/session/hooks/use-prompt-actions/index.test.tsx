@@ -834,6 +834,89 @@ describe('usePromptActions /wake', () => {
   })
 })
 
+describe('usePromptActions /refresh', () => {
+  beforeEach(() => {
+    setSessions(() => [sessionInfo()])
+  })
+
+  afterEach(() => {
+    cleanup()
+    clearNotifications()
+    setMessages([])
+    vi.restoreAllMocks()
+  })
+
+  const render = async (requestGateway: (method: string, params?: Record<string, unknown>) => Promise<never>) => {
+    let handle: HarnessHandle | null = null
+
+    await actRender(
+      <Harness
+        onReady={h => (handle = h)}
+        onSeedState={() => undefined}
+        refreshSessions={async () => undefined}
+        requestGateway={requestGateway as never}
+      />
+    )
+
+    return handle! as HarnessHandle
+  }
+
+  it('/refresh keep reloads skills then compresses this chat, with no slash.exec or model turn', async () => {
+    const requestGateway = vi.fn(async (method: string, _params?: Record<string, unknown>) =>
+      method === 'session.compress' ? ({ removed: 2, summary: { headline: 'Compressed: 4 → 2 messages' } } as never) : ({} as never)
+    )
+
+    const handle = await render(requestGateway)
+    await handle.submitText('/refresh keep')
+
+    const methods = requestGateway.mock.calls.map(call => call[0])
+    expect(methods.indexOf('skills.reload')).toBeGreaterThanOrEqual(0)
+    expect(methods.indexOf('skills.reload')).toBeLessThan(methods.indexOf('session.compress'))
+    // "keep" is the mode, not a compress focus topic.
+    expect(requestGateway.mock.calls.find(call => call[0] === 'session.compress')?.[1]).not.toHaveProperty('focus_topic')
+    expect(methods).not.toContain('slash.exec')
+    expect(methods).not.toContain('command.dispatch')
+    expect(methods).not.toContain('prompt.submit')
+  })
+
+  it('/refresh reloads skills and starts a new chat without compressing', async () => {
+    const requestGateway = vi.fn(async (_method: string, _params?: Record<string, unknown>) => ({}) as never)
+
+    const handle = await render(requestGateway)
+    await handle.submitText('/refresh')
+
+    const methods = requestGateway.mock.calls.map(call => call[0])
+    expect(methods).toContain('skills.reload')
+    expect(methods).not.toContain('session.compress')
+    expect(methods).not.toContain('slash.exec')
+    expect(methods).not.toContain('prompt.submit')
+  })
+
+  it('stops before compressing when the skills reload fails', async () => {
+    const requestGateway = vi.fn(async (method: string, _params?: Record<string, unknown>) => {
+      if (method === 'skills.reload') {
+        throw new Error('rescan failed')
+      }
+
+      return {} as never
+    })
+
+    const handle = await render(requestGateway)
+    await handle.submitText('/refresh keep')
+
+    expect(requestGateway.mock.calls.map(call => call[0])).not.toContain('session.compress')
+  })
+
+  it('refuses an unknown argument without touching the gateway', async () => {
+    const requestGateway = vi.fn(async (_method: string, _params?: Record<string, unknown>) => ({}) as never)
+
+    const handle = await render(requestGateway)
+    await handle.submitText('/refresh my-title')
+
+    expect(requestGateway.mock.calls.map(call => call[0])).not.toContain('skills.reload')
+  })
+})
+
 describe('usePromptActions /compress', () => {
   beforeEach(() => {
     setSessions(() => [sessionInfo()])

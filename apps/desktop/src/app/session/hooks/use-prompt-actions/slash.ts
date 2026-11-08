@@ -650,6 +650,38 @@ export function useSlashCommand(deps: SlashCommandDeps) {
           prepareDefaultNewSession()
           startFreshSessionDraft()
         },
+        // /refresh = /reload-skills, then /new; `/refresh keep` = /reload-skills, then /compress this
+        // chat (a new chat drops the history, so compressing before it is pointless). Direct: no model
+        // turn. A failed reload stops here, before the chat is dropped or compressed.
+        refresh: async ctx => {
+          const resolved = await withSlashOutput(ctx)
+
+          if (!resolved) {
+            return
+          }
+
+          const keep = ctx.arg.trim().toLowerCase() === 'keep'
+
+          if (ctx.arg.trim() && !keep) {
+            resolved.render('Usage: /refresh (reload skills, new chat) or /refresh keep (reload skills, compress this chat).')
+
+            return
+          }
+
+          try {
+            await requestGateway('skills.reload', { session_id: resolved.sessionId })
+          } catch (err) {
+            resolved.render(`Skills reload failed, so nothing else was done: ${err instanceof Error ? err.message : String(err)}`)
+
+            return
+          }
+
+          if (keep) {
+            await actionHandlers.compress({ ...ctx, arg: '', command: '/compress', name: 'compress' })
+          } else {
+            await actionHandlers.new({ ...ctx, arg: '', command: '/new', name: 'new' })
+          }
+        },
         branch: async () => {
           await branchCurrentSession()
         },

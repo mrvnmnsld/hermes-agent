@@ -79,6 +79,7 @@
   "/reasoning": null,
   "/redraw": "terminal",
   "/refine": null,
+  "/refresh": null,
   "/reload": "terminal",
   "/reload-mcp": "advanced",
   "/reload-skills": "advanced",

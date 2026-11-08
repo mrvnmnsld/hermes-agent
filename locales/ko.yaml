@@ -315,6 +315,9 @@ gateway:
     none_connected: "연결된 MCP 서버가 없습니다."
     tools_available: "\n🔧 {servers}개 서버에서 {tools}개 도구 사용 가능"
     failed: "❌ MCP 재로드 실패: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **스킬이 재로드되었습니다**\n"
     no_new: "새로운 스킬이 감지되지 않았습니다."
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ 제거됨: {names}"
     tools_available: "🔧 서버 {servers}개에서 도구 {tools}개 사용 가능"
     agent_updated: "✅ 에이전트 업데이트됨 — 도구 {count}개 사용 가능"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 스킬을 다시 불러오는 중..."
     total: "📚 스킬 {count}개 사용 가능"

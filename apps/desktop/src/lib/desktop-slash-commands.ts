@@ -77,6 +77,7 @@ export type DesktopActionId =
   | 'pet'
   | 'profile'
   | 'queue'
+  | 'refresh'
   | 'reasoning'
   | 'retry'
   | 'rollback'
@@ -202,6 +203,12 @@ const rpc = (
 const DESKTOP_COMMAND_SPECS: readonly DesktopCommandSpec[] = [
   // Local client actions
   { name: '/new', description: 'Start a new desktop chat', aliases: ['/reset', '/clear'], surface: action('new') },
+  {
+    name: '/refresh',
+    description: 'Reload skills, then start a new chat (keep: compress this chat instead)',
+    surface: action('refresh'),
+    argumentMode: 'options'
+  },
   {
     name: '/stop',
     description: 'Stop the active turn and background processes',

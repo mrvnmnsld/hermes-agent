@@ -114,6 +114,8 @@ COMMAND_REGISTRY: list[CommandDef] = [
                subcommands=("new", "list", "prune"), desktop="terminal"),
     CommandDef("compress", "Compress conversation context (add 'here [N]' to keep recent N turns; --preview shows what would happen)", "Session",
                aliases=("compact",), args_hint="[here [N] | focus topic | --preview|--dry-run]"),
+    CommandDef("refresh", "Reload skills, then start a new session ('keep' compresses this session instead)", "Session",
+               args_hint="[keep]", subcommands=("keep",)),
     CommandDef("rollback", "List or restore filesystem checkpoints (restores keep your hand-edits; --all overrides)", "Session",
                args_hint="[number] [--all]"),
     CommandDef("snapshot", "Create or restore state snapshots of Hermes config/state", "Session",

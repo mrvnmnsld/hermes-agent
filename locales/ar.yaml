@@ -315,6 +315,9 @@ gateway:
     none_connected: "لا توجد خوادم MCP متصلة."
     tools_available: "\n🔧 {tools} أداة متاحة من {servers} خادم"
     failed: "❌ فشلت إعادة تحميل MCP: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **أُعيد تحميل المهارات**\n"
     no_new: "لم تُكتشف مهارات جديدة."
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ أُزيل: {names}"
     tools_available: "🔧 {tools} أداة متاحة من {servers} خادم"
     agent_updated: "✅ تم تحديث الوكيل — {count} أداة متاحة"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 جارٍ إعادة تحميل المهارات..."
     total: "📚 {count} مهارة متاحة"

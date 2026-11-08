@@ -1055,7 +1055,7 @@ class GatewayBusySessionMixin:
     _IDLE_COMMANDS = (
         "topic", "whoami", "platform", "stop", "reasoning", "memory", "skills", "fast",
         "approvals", "model", "codex-runtime", "personality", "suggestions", "save", "retry",
-        "sethome", "compress", "usage", "topup", "insights", "reload-mcp", "reload-skills",
+        "sethome", "compress", "usage", "topup", "insights", "reload-mcp", "reload-skills", "refresh",
         "bundles", "debug", "title", "resume", "sessions", "branch", "rollback", "diff", "goal",
         "loop", "refine", "review", "voice", "curator",
     )

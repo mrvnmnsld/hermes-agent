@@ -278,6 +278,28 @@ class CLILoopsMixin:
         with self._busy_command(self._slow_command_status(cmd_original)):
             self._reload_skills()
 
+    def _cmd_refresh(self, cmd_original: str):
+        """``/refresh``: reload skills, then start a new session. ``/refresh keep``: reload skills, then
+        compress this session. Compressing before a new session is pointless (``/new`` drops the history).
+        Direct: no model turn. A failed reload stops here so the session is never dropped for nothing."""
+        arg = cmd_original.strip().partition(" ")[2].strip().lower()
+        if arg not in ("", "keep"):
+            print(t("cli.refresh.usage"))
+            return True
+        if self._slash_metrics_surface is None:  # the TUI slash worker: its session is not the TUI's
+            print(t("cli.refresh.not_here"))
+            return True
+        with self._busy_command(self._slow_command_status("/reload-skills")):
+            reloaded = self._reload_skills()
+        if not reloaded:
+            print(t("cli.refresh.reload_failed"))
+            return True
+        if arg == "keep":
+            self._manual_compress("/compress")  # prints its own "too short" / "no agent" skips
+        else:
+            self._cmd_new("/new")  # keeps the usual confirmation; a cancel leaves the session as it was
+        return True
+
     def _cmd_plugins(self, cmd_original: str):
         from hermes_constants import display_hermes_home
         parts = cmd_original.split()[1:]

@@ -315,6 +315,9 @@ gateway:
     none_connected: "Não há servidores MCP ligados."
     tools_available: "\n🔧 {tools} ferramenta(s) disponíveis de {servers} servidor(es)"
     failed: "❌ Falha ao recarregar MCP: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **Skills recarregadas**\n"
     no_new: "Não foram detetadas novas skills."
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ Removidos: {names}"
     tools_available: "🔧 {tools} ferramenta(s) disponível(is) de {servers} servidor(es)"
     agent_updated: "✅ Agente atualizado — {count} ferramenta(s) disponível(is)"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 Recarregando skills..."
     total: "📚 {count} skill(s) disponível(is)"

@@ -315,6 +315,9 @@ gateway:
     none_connected: "接続中の MCP サーバーはありません。"
     tools_available: "\n🔧 {servers} 台のサーバーから {tools} 個のツールが利用可能"
     failed: "❌ MCP の再読み込みに失敗しました: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **スキルを再読み込みしました**\n"
     no_new: "新しいスキルは検出されませんでした。"
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ 削除: {names}"
     tools_available: "🔧 {servers} 台のサーバーから {tools} 個のツールが利用可能"
     agent_updated: "✅ エージェントを更新しました — {count} 個のツールが利用可能"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 スキルを再読み込みしています..."
     total: "📚 {count} 件のスキルが利用可能"

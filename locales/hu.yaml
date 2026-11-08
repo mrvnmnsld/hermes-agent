@@ -318,6 +318,9 @@ gateway:
     none_connected: "Nincsenek csatlakoztatott MCP-szerverek."
     tools_available: "\n🔧 {tools} eszköz érhető el {servers} szerverről"
     failed: "❌ MCP újratöltés sikertelen: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **Készségek újratöltve**\n"
     no_new: "Nem észleltünk új készséget."
@@ -3316,6 +3319,10 @@ cli:
     removed: "➖ Eltávolítva: {names}"
     tools_available: "🔧 {tools} eszköz érhető el {servers} szerverről"
     agent_updated: "✅ Ügynök frissítve — {count} eszköz érhető el"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 Skillek újratöltése..."
     total: "📚 {count} skill érhető el"

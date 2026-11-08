@@ -1116,6 +1116,24 @@ class GatewaySlashCommandsMixin(
             message=t("gateway.reload_mcp.confirm_prompt"), handler=_on_confirm)
 
     async def _handle_reload_skills_command(self, event: MessageEvent) -> str:
+        return (await self._reload_skills_outcome(event))[0]
+
+    async def _handle_refresh_command(self, event: MessageEvent) -> str:
+        """/refresh: reload skills, then start a new session; /refresh keep: reload skills, then compress
+        this session (a new session would drop the history, so compressing first is pointless). Direct:
+        no model turn. A failed reload stops here, before anything is dropped."""
+        arg = event.get_command_args().strip().lower()
+        if arg not in ("", "keep"):
+            return t("gateway.refresh.usage")
+        text, ok = await self._reload_skills_outcome(event)
+        if not ok:
+            return t("gateway.refresh.reload_failed", error=text)
+        # The sub-handlers read their own arguments (/new takes a title, /compress a focus topic).
+        follow = dataclasses.replace(event, text="/compress" if arg == "keep" else "/new")
+        reply = await (self._handle_compress_command(follow) if arg == "keep" else self._handle_reset_command(follow))
+        return f"{text}\n\n{reply}" if isinstance(reply, str) else reply
+
+    async def _reload_skills_outcome(self, event: MessageEvent) -> tuple[str, bool]:
         """Handle /reload-skills — rescan skills dir, queue a note for next turn. Skills are invoked at
         runtime, not baked into the system prompt, so this does NOT clear the prompt cache. The diff
         goes into ``_pending_skills_reload_notes[session_key]``, prepended to the NEXT user message —
@@ -1144,7 +1162,7 @@ class GatewaySlashCommandsMixin(
             lines = [t("gateway.reload_skills.header")]
             if not added and not removed:
                 lines += [t("gateway.reload_skills.no_new"), t("gateway.reload_skills.total", count=total)]
-                return "\n".join(lines)
+                return "\n".join(lines), True
 
             def _fmt_line(item: dict) -> str:
                 nm, desc = item.get("name", ""), item.get("description", "")
@@ -1169,10 +1187,10 @@ class GatewaySlashCommandsMixin(
                 self._pending_skills_reload_notes = {}
             if session_key:
                 self._pending_skills_reload_notes[session_key] = "\n".join(sections)
-            return "\n".join(lines)
+            return "\n".join(lines), True
         except Exception as e:
             logger.warning("Skills reload failed: %s", e)
-            return t("gateway.reload_skills.failed", error=e)
+            return t("gateway.reload_skills.failed", error=e), False
 
     async def _handle_bundles_command(self, event: MessageEvent) -> str:
         """Handle /bundles — list installed skill bundles (mirrors the CLI handler). Bundles are

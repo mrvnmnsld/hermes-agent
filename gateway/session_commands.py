@@ -127,6 +127,7 @@ REFUSAL_HINTS = {
     'hatch': 'Generate a pet from the classic CLI (`hermes --cli`, then /hatch), or use /pet to pick one.',
     'worktree': 'Start in a fresh worktree with `hermes -w`, or use the classic CLI (`hermes --cli`).',
     'palette': 'Type / to search commands (the composer completes and filters them).',
+    'refresh': 'Run /reload-skills, then /new (or /compress to keep this session).',
 }
 
 

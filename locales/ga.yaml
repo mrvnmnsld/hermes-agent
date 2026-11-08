@@ -315,6 +315,9 @@ gateway:
     none_connected: "Níl aon fhreastalaí MCP ceangailte."
     tools_available: "\n🔧 {tools} uirlis(í) ar fáil ó {servers} freastalaí(thí)"
     failed: "❌ Theip ar athlódáil MCP: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **Scileanna Athlódáilte**\n"
     no_new: "Níor braitheadh aon scil nua."
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ Bainte: {names}"
     tools_available: "🔧 {tools} uirlis(í) ar fáil ó {servers} freastalaí(thí)"
     agent_updated: "✅ Gníomhaire nuashonraithe — {count} uirlis(í) ar fáil"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 Ag athlódáil scileanna..."
     total: "📚 {count} scil(eanna) ar fáil"

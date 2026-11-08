@@ -315,6 +315,9 @@ gateway:
     none_connected: "Немає підключених MCP-серверів."
     tools_available: "\n🔧 {tools} інструмент(ів) доступно з {servers} сервер(ів)"
     failed: "❌ Помилка перезавантаження MCP: {error}"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done: {error}"
   reload_skills:
     header: "🔄 **Навички перезавантажено**\n"
     no_new: "Нових навичок не виявлено."
@@ -3299,6 +3302,10 @@ cli:
     removed: "➖ Видалено: {names}"
     tools_available: "🔧 {tools} інструмент(ів) доступно з {servers} сервер(ів)"
     agent_updated: "✅ Агента оновлено — доступно {count} інструмент(ів)"
+  refresh:
+    usage: "Usage: /refresh (reload skills, then start a new session) or /refresh keep (reload skills, then compress this session)."
+    reload_failed: "Skills reload failed, so nothing else was done."
+    not_here: "/refresh is not available in this client. Run /reload-skills, then /new (or /compress to keep this session)."
   reload_skills:
     reloading: "🔄 Перезавантаження навичок..."
     total: "📚 {count} навичок(и) доступно"

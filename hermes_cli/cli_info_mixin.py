@@ -1029,7 +1029,7 @@ class CLIInfoMixin:
         except Exception as e:
             print(f"  {t('gateway.reload_mcp.failed', error=str(e))}")
 
-    def _reload_skills(self) -> None:
+    def _reload_skills(self) -> bool:
         """Reload skills: rescan ~/.hermes/skills/ and queue a note for the next user turn.
 
         Skills are invoked at runtime (``/skill-name``, ``skills_list``, ``skill_view``), not from
@@ -1057,7 +1057,7 @@ class CLIInfoMixin:
             if not added and not removed:
                 print(f"  {t('gateway.reload_skills.no_new')}")
                 print(f"  {t('cli.reload_skills.total', count=str(total))}")
-                return
+                return True
 
             if added:
                 print(f"  {t('cli.reload_skills.added_header')}")
@@ -1077,5 +1077,7 @@ class CLIInfoMixin:
                 sections += ["", "Removed Skills:", *(_skill_line(item) for item in removed)]
             sections += ["", "Use skills_list to see the updated catalog.]"]
             self._pending_skills_reload_note = "\n".join(sections)
+            return True
         except Exception as e:
             print(f"  {t('gateway.reload_skills.failed', error=str(e))}")
+            return False

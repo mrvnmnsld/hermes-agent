@@ -158,6 +158,12 @@ describe('desktop slash command curation', () => {
     expect(desktopSlashUnavailableMessage('/login')).not.toBeNull()
   })
 
+  it('routes /refresh through its own action and offers it', () => {
+    expect(resolveDesktopCommand('/refresh')?.surface).toEqual({ kind: 'action', action: 'refresh' })
+    expect(isDesktopSlashCommand('/refresh')).toBe(true)
+    expect(isDesktopSlashCommand('/refresh', 'keep')).toBe(true)
+  })
+
   it('routes /compress through the session-compression action', () => {
     // /compress must be an action (session.compress RPC), not exec: the slash
     // worker route times out on large sessions (#44456).
