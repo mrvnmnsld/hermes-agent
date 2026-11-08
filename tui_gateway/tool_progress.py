@@ -464,6 +464,7 @@ def _int_or_skip(v):
 _SUBAGENT_FIELDS = (
     ("subagent_id", bool, str), ("parent_id", bool, str), ("child_session_id", bool, str),
     ("delegation_id", bool, str), ("depth", _not_none, int), ("model", bool, str), ("tool_count", _not_none, int),
+    ("worker", bool, str), ("name", bool, str), ("provider", bool, str),
     ("toolsets", bool, _str_list), ("input_tokens", _not_none, _int_or_skip), ("output_tokens", _not_none, _int_or_skip),
     ("reasoning_tokens", _not_none, _int_or_skip), ("api_calls", _not_none, _int_or_skip),
     ("files_read", bool, _str_list), ("files_written", bool, _str_list), ("output_tail", bool, list),
