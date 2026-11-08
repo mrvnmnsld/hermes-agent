@@ -75,21 +75,6 @@ export function useClarifyKeys({
     [isStaged]
   )
 
-  const nextUnstaged = useCallback(
-    (index: number): null | number => {
-      for (let offset = 1; offset < questions.length; offset += 1) {
-        const candidate = (index + offset) % questions.length
-
-        if (isOpen(questions[candidate])) {
-          return candidate
-        }
-      }
-
-      return null
-    },
-    [isOpen, questions]
-  )
-
   const pick = useCallback(
     (index: number, choiceIndex: number) => {
       const question = questions[index]
@@ -100,18 +85,11 @@ export function useClarifyKeys({
       }
 
       onToggle(question, choice)
-
-      const next = question.multiSelect ? null : nextUnstaged(index)
-
-      if (next !== null && !questions[next]?.choices?.length) {
-        focusOther(next)
-
-        return
-      }
-
-      setCursor(next === null ? { question: index, row: choiceIndex } : { question: next, row: 0 })
+      // Every question sits on one scrollable page: answering one keeps the cursor on it instead of
+      // jumping to the next, so the user scrolls to the next question themselves.
+      setCursor({ question: index, row: choiceIndex })
     },
-    [focusOther, nextUnstaged, onToggle, questions]
+    [onToggle, questions]
   )
 
   const move = useCallback(

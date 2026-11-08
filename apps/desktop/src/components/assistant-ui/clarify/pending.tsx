@@ -316,19 +316,21 @@ export function ClarifyToolPending({
           <MessageQuestion aria-hidden className={CLARIFY_ICON_CLASS} />
         </div>
         {undelivered ? <UndeliveredNotice /> : null}
-        {questions.map((question, index) => (
-          <QuestionBlock
-            cursor={ready && keys.activeQuestion === index ? keys.cursorRow : null}
-            disabled={disabled}
-            key={question.qid}
-            onActivate={() => keys.focusQuestion(index)}
-            onDraft={value => draftFor(question, value)}
-            onOtherFocus={() => keys.onOtherFocus(index)}
-            onPick={choiceIndex => keys.pick(index, choiceIndex)}
-            question={question}
-            staged={stageFor(question.qid)}
-          />
-        ))}
+        <div className="grid max-h-[min(60vh,28rem)] gap-4 overflow-y-auto overscroll-contain pr-1" data-clarify-scroll>
+          {questions.map((question, index) => (
+            <QuestionBlock
+              cursor={ready && keys.activeQuestion === index ? keys.cursorRow : null}
+              disabled={disabled}
+              key={question.qid}
+              onActivate={() => keys.focusQuestion(index)}
+              onDraft={value => draftFor(question, value)}
+              onOtherFocus={() => keys.onOtherFocus(index)}
+              onPick={choiceIndex => keys.pick(index, choiceIndex)}
+              question={question}
+              staged={stageFor(question.qid)}
+            />
+          ))}
+        </div>
       </ClarifyShell>
 
       {undelivered ? null : (

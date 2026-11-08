@@ -5,8 +5,6 @@ callback (cli.py, gateway/run.py, tui_gateway)."""
 import json
 from typing import Callable, Dict, List, Optional
 
-MAX_CHOICES = 4  # the UI always appends an "Other (type your answer)" row
-MAX_QUESTIONS = 5  # independent questions per call
 # Per-choice cap. Surfaces wrap long choice text (newlines kept), so anything longer is rejected here, at the
 # source, instead of a surface silently dropping a choice that ``choices_offered`` still reports as shown.
 MAX_CHOICE_CHARS = 8000
@@ -53,8 +51,6 @@ def _normalize_questions(questions) -> tuple:
     ``choices_offered`` and ``multi_select``."""
     if not isinstance(questions, list) or not questions:
         return None, f"questions must be a non-empty array. {_SHAPE}"
-    if len(questions) > MAX_QUESTIONS:
-        return None, f"questions supports at most {MAX_QUESTIONS} items."
     normalized = []
     for index, item in enumerate(questions):
         if not isinstance(item, dict):
@@ -70,7 +66,7 @@ def _normalize_questions(questions) -> tuple:
                 if len(choice.strip()) > MAX_CHOICE_CHARS:
                     return None, (f"questions[{index}].choices[{pos}] is {len(choice.strip())} characters; the limit is "
                                   f"{MAX_CHOICE_CHARS}. Move detail into the question text and resend.")
-            cleaned = [c.strip() for c in choices if c.strip()][:MAX_CHOICES]
+            cleaned = [c.strip() for c in choices if c.strip()]
             if choices and not cleaned:
                 # A card with no options strands the turn: say so instead of silently asking open-ended.
                 return None, (f"questions[{index}].choices has {len(choices)} entries but all are blank. "
@@ -161,11 +157,12 @@ CLARIFY_SCHEMA = {
     "description": (
         "Ask the user one or more questions when you need a decision or feedback. "
         "Pass every question "
-        f"in `questions` (1-{MAX_QUESTIONS} entries) — a single question is a "
+        "in `questions` (any number of entries, shown together on one scrollable "
+        "page) — a single question is a "
         "one-entry array, and several INDEPENDENT questions belong in ONE "
         "call (one form beats a chain of clarify calls; if one answer would "
         "change another question, ask separately). Per question: "
-        f"single-select (up to {MAX_CHOICES} choices — put your recommended "
+        "single-select (any number of choices — put your recommended "
         "option FIRST, the UI marks it '(Recommended)' and auto-appends an "
         "'Other' free-text row), multi-select (multi_select=true), or "
         "open-ended (omit choices). Options go ONLY in `choices`, never "
@@ -185,7 +182,6 @@ CLARIFY_SCHEMA = {
             "questions": {
                 "type": "array",
                 "minItems": 1,
-                "maxItems": MAX_QUESTIONS,
                 "description": (
                     "The question(s). Each: question text (options excluded), "
                     "optional choices (recommended first; omit for free-text), "
@@ -199,7 +195,6 @@ CLARIFY_SCHEMA = {
                         "choices": {
                             "type": "array",
                             "items": {"type": "string"},  # no maxLength: llama.cpp's grammar converter rejects >=2000 (#131278); the limit is enforced above
-                            "maxItems": MAX_CHOICES,
                         },
                         "multi_select": {"type": "boolean"},
                     },

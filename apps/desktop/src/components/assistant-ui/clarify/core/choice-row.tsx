@@ -4,7 +4,8 @@ import { Kbd } from '@/components/ui/kbd'
 import { cn } from '@/lib/utils'
 import { bareChoice, RECOMMENDED_LABEL } from '@/store/clarify'
 
-export const letterFor = (index: number): string => String.fromCharCode(65 + index)
+// A–Z for the first 26 rows; past that the row shows its number, so a long list never gets a non-letter key.
+export const letterFor = (index: number): string => (index < 26 ? String.fromCharCode(65 + index) : String(index + 1))
 
 // The backend tags the agent's preferred option (`mark_recommended`); the card
 // renders the label in tertiary text so the option itself still reads first.

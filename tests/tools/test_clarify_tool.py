@@ -4,8 +4,6 @@ import json
 
 from tools.clarify_tool import (
     clarify_tool,
-    MAX_CHOICES,
-    MAX_QUESTIONS,
     CLARIFY_SCHEMA,
 )
 
@@ -46,8 +44,8 @@ class TestClarifyToolBasics:
 class TestClarifyToolChoicesValidation:
     """Tests for choices parameter validation."""
 
-    def test_choices_trimmed_to_max(self):
-        """Should trim choices to MAX_CHOICES."""
+    def test_all_choices_kept(self):
+        """No choice-count cap: every choice the model sends reaches the UI."""
         choices_passed = []
 
         def mock_callback(questions):
@@ -57,7 +55,8 @@ class TestClarifyToolChoicesValidation:
         many_choices = ["a", "b", "c", "d", "e", "f", "g"]
         _ask(mock_callback, [{"question": "Pick one", "choices": many_choices}])
 
-        assert len(choices_passed) == MAX_CHOICES
+        # The UI marks the first choice as the recommended one; nothing is dropped.
+        assert choices_passed == ["a (Recommended)", *many_choices[1:]]
 
 
 class TestClarifyToolCallbackHandling:
@@ -86,11 +85,10 @@ class TestClarifySchema:
 
     def test_schema_questions_param_is_required_and_capped(self):
         """`questions` is the single documented way to call (a single question
-        is a one-entry array) and carries the batch cap so the model sees the
-        limit."""
+        is a one-entry array) and has no question-count cap."""
         params = CLARIFY_SCHEMA["parameters"]
         assert params["required"] == ["questions"]
-        assert params["properties"]["questions"]["maxItems"] == MAX_QUESTIONS
+        assert "maxItems" not in params["properties"]["questions"]
 
 
 class TestClarifyToolMultiSelect:
@@ -237,9 +235,9 @@ class TestRegistryMultiSelectPassThrough:
 class TestClarifyBatchValidation:
     """Validation of the `questions` batch parameter (issue #18450)."""
 
-    def test_batch_rejects_more_than_five(self):
+    def test_batch_has_no_question_cap(self):
         result = _ask(lambda questions: _reply({}), [{"question": f"Q{i}?"} for i in range(6)])
-        assert "error" in result
+        assert "error" not in result
 
     def test_batch_rejects_blank_question_text(self):
         result = _ask(lambda questions: _reply({}), [{"question": "Real?"}, {"question": "   "}])
@@ -290,7 +288,7 @@ class TestClarifyBatchValidation:
             {"question": "Pick layout", "choices": ["Loose layout", "Tight"]},
         ])
         q0, q1 = seen["questions"]
-        assert len(q0["choices"]) == MAX_CHOICES
+        assert len(q0["choices"]) == 6
         assert q0["choices"][0] == "a (Recommended)"
         assert q1["choices"] == ["Loose layout (Recommended)", "Tight"]
 
