@@ -16,6 +16,7 @@ import { useCompactConversation } from '@/app/shell/hooks/use-compact-conversati
 import { useContextBreakdown } from '@/app/shell/hooks/use-context-breakdown'
 import { useFocusedSessionRow } from '@/app/shell/hooks/use-focused-session-row'
 import { useProjectPickerItems } from '@/app/shell/hooks/use-project-picker'
+import { useProviderUsageStatusbarItem } from '@/app/shell/provider-usage-statusbar'
 import { useSystemResourcesStatusbarItem } from '@/app/shell/system-resources-statusbar'
 import { $paneVisible } from '@/components/pane-shell/tree/store'
 import { Badge } from '@/components/ui/badge'
@@ -399,6 +400,7 @@ export function useStatusbarItems({
   )
 
   const systemResourcesItem = useSystemResourcesStatusbarItem()
+  const providerUsageItem = useProviderUsageStatusbarItem()
 
   const gatewayMenuContent = useMemo(
     () => (close: () => void) => (
@@ -791,6 +793,7 @@ export function useStatusbarItems({
         toggleLabel: planGauge ? copy.togglePlanUsage : undefined,
         variant: 'link'
       },
+      providerUsageItem,
       systemResourcesItem,
       {
         ...approvalModeItem,
@@ -830,6 +833,7 @@ export function useStatusbarItems({
       gatewayState,
       planGauge,
       planUsed,
+      providerUsageItem,
       systemResourcesItem,
       t.modelPicker,
       terminalShowing,

@@ -4190,6 +4190,12 @@ export const en: Translations = {
       turnRunning: 'Running',
       contextUsage: 'Context usage',
       compressions: count => `Compressions: ${count}`,
+      providerUsage: {
+        title: 'Provider usage',
+        loading: 'Loading…',
+        empty: 'No signed-in providers.',
+        toggle: 'Provider usage'
+      },
       systemResources: {
         title: 'System Resources',
         loading: 'Resources…',

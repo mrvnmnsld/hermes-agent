@@ -3654,6 +3654,12 @@ export interface Translations extends NoticeTranslations {
       turnRunning: string
       contextUsage: string
       compressions: (count: number) => string
+      providerUsage: {
+        title: string
+        loading: string
+        empty: string
+        toggle: string
+      }
       systemResources: {
         title: string
         loading: string

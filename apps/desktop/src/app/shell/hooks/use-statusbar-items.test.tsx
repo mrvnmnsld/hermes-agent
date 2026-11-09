@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook } from '@testing-library/react'
 import type { WritableAtom } from 'nanostores'
 import { isValidElement, type ReactNode } from 'react'
@@ -85,7 +86,13 @@ function focusPane(storedId: null | string): void {
   $focusedTreePaneId.set(tilePane)
 }
 
-const wrapper = ({ children }: { children: ReactNode }) => <MemoryRouter>{children}</MemoryRouter>
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <QueryClientProvider client={queryClient}>
+    <MemoryRouter>{children}</MemoryRouter>
+  </QueryClientProvider>
+)
 
 function renderStatusbarItems(changeSessionCwd: ChangeSessionCwd = async () => {}) {
   const { result } = renderHook(
