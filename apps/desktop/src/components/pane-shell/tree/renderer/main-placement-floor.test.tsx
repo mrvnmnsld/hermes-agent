@@ -109,7 +109,7 @@ describe('vertical sash vs leading-pane scrollbar (#99867)', () => {
     expect(sashes.length).toBeGreaterThan(0)
 
     for (const sash of sashes) {
-      expect(sash.className).toContain('w-[8px]')
+      expect(sash.className).toContain('w-(--ui-sash-size)')
       expect(sash.className).not.toContain('-translate-x-[1px]')
     }
   })

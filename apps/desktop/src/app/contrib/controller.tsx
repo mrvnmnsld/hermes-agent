@@ -68,6 +68,7 @@ import {
   setSidebarOpen,
   SIDEBAR_DEFAULT_WIDTH,
   SIDEBAR_MAX_WIDTH,
+  SIDEBAR_MIN_WIDTH,
   sidebarSide
 } from '@/store/layout'
 import { $profiles } from '@/store/profile'
@@ -212,7 +213,7 @@ registry.registerMany([
       tabTitle: () => <LocalizedTabTitle select={t => t.sidebar.sessions} />,
       tabTitleText: () => translateNow('sidebar.sessions'),
       width: `${SIDEBAR_DEFAULT_WIDTH}px`,
-      minWidth: `${SIDEBAR_DEFAULT_WIDTH}px`,
+      minWidth: SIDEBAR_MIN_WIDTH,
       maxWidth: `${SIDEBAR_MAX_WIDTH}px`
     },
     render: () => <WiredPane part="sidebar" />
