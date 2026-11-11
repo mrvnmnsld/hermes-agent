@@ -6,9 +6,9 @@
  * "Fit" (the default) applies no constraint — the page fills the pane exactly
  * as today; it is the picker's "off" state.
  *
- * The width is enforced as a fixed track (not a max) so a wide preset like
- * 1080p in a narrow pane renders at its true CSS width and scrolls horizontally
- * instead of silently shrinking to fit at a breakpoint.
+ * The guest always lays out at the preset's true CSS size; a preset larger
+ * than the pane (1080p in a side pane) is scaled down visually to fit, so the
+ * whole page stays visible and breakpoints still fire at the real width.
  *
  * Tier 2 (real device emulation via CDP `Emulation.setDeviceMetricsOverride`)
  * is a separate main-process + preload change that drives THE SAME preset list
@@ -43,7 +43,23 @@ export const VIEWPORT_PRESETS: readonly ViewportPresetDef[] = [
   { id: 'fhd-1080p', width: 1920, height: 1080 }
 ]
 
-/** The constrained CSS width for a preset, or `null` when it should fill the pane. */
-export function viewportWidthOf(preset: ViewportPreset): number | null {
-  return VIEWPORT_PRESETS.find(def => def.id === preset)?.width ?? null
+export interface ViewportFrame {
+  width: number
+  height: number
+  /** Visual scale that fits the frame in the stage; never above 1. */
+  scale: number
+}
+
+/** The device frame for a preset inside a stage of the given size, or `null` for Fit. */
+export function viewportFrameOf(preset: ViewportPreset, stageWidth: number, stageHeight: number): ViewportFrame | null {
+  const def = VIEWPORT_PRESETS.find(candidate => candidate.id === preset)
+
+  if (!def?.width || !def.height) {
+    return null
+  }
+
+  // An unmeasured stage (0) must not collapse the frame.
+  const scale = Math.min(1, (stageWidth || def.width) / def.width, (stageHeight || def.height) / def.height)
+
+  return { width: def.width, height: def.height, scale }
 }

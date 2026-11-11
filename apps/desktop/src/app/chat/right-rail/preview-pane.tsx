@@ -11,6 +11,7 @@ import { openGuestContextMenu } from '@/app/context-menu/store'
 import { PanelEmpty } from '@/app/overlays/panel'
 import { PreviewDocumentFrame } from '@/components/ui/preview-document-frame'
 import { Tip } from '@/components/ui/tooltip'
+import { useResizeObserver } from '@/hooks/use-resize-observer'
 import { type Translations, useI18n } from '@/i18n'
 import { isDesktopFsRemoteMode, isReadFileErrorResult } from '@/lib/desktop-fs'
 import { guardGuestPointers } from '@/lib/guest-pointer-guard'
@@ -77,7 +78,7 @@ import { usePreviewGuestOffscreen } from './preview-guest-offscreen'
 import { type PreviewInputEvent } from './preview-input'
 import { PREVIEW_BROWSER_ATTR, registerPreviewNav } from './preview-nav'
 import { registerPreviewPageReader } from './preview-reader'
-import { type ViewportPreset, viewportWidthOf } from './preview-viewport'
+import { viewportFrameOf, type ViewportPreset } from './preview-viewport'
 import { RealProfileConsentDialog } from './real-profile-consent-dialog'
 
 type PreviewWebview = HTMLElement &
@@ -379,8 +380,23 @@ export function PreviewPane({
   const webSurface = webPreviewSurface(isWebPreview, isRemoteHtml)
   const usesBrowserIframe = webSurface === 'iframe'
   const usesWebview = webSurface === 'webview'
-  // CSS px width the guest is constrained to (device frame); `null` = fill the pane.
-  const viewportWidth = viewportWidthOf(viewportPreset)
+  const [stageSize, setStageSize] = useState({ height: 0, width: 0 })
+
+  const measureStage = useCallback(() => {
+    const stage = previewContentRef.current
+
+    if (stage) {
+      setStageSize(prev =>
+        prev.width === stage.clientWidth && prev.height === stage.clientHeight
+          ? prev
+          : { height: stage.clientHeight, width: stage.clientWidth }
+      )
+    }
+  }, [])
+
+  useResizeObserver(measureStage, previewContentRef)
+  // Device frame the guest is laid out in (scaled down to fit the pane); `null` = fill the pane.
+  const viewportFrame = viewportFrameOf(viewportPreset, stageSize.width, stageSize.height)
 
   const remoteHtmlDocument = useMemo(
     () => (isRemoteHtml ? remoteHtmlPreviewDocument(target.dataUrl!) : null),
@@ -1539,29 +1555,45 @@ export function PreviewPane({
               width when a preset is active, so responsive breakpoints fire
               without resizing the pane. "Fit" applies no constraint (exact prior
               geometry). Additive only — the annotate and console overlays are
-              untouched and still span the full pane. The outer stage scrolls
-              internally (NOT previewContentRef, which would carry the console;
-              see plan §9.2), so a wide 1080p frame pans without moving overlays. */}
+              untouched and still span the full pane. A frame larger than the
+              pane (1080p) is scaled down to fit instead of scrolling: the guest
+              keeps its true CSS size and only the picture shrinks. */}
           <div
             className={cn(
-              'absolute inset-0 overflow-auto',
-              viewportWidth !== null && 'bg-(--ui-editor-surface-background)'
+              'absolute inset-0 overflow-hidden',
+              viewportFrame && 'bg-(--ui-editor-surface-background)'
             )}
           >
             <div
               className={cn(
-                'relative h-full',
-                viewportWidth !== null &&
-                  'mx-auto shrink-0 overflow-hidden rounded-[0.5rem] border border-border/60 bg-white shadow-lg'
+                'relative',
+                viewportFrame ? 'mx-auto overflow-hidden rounded-[0.5rem] bg-white shadow-lg' : 'h-full'
               )}
-              style={viewportWidth !== null ? { width: viewportWidth } : undefined}
+              style={
+                viewportFrame
+                  ? {
+                      height: viewportFrame.height * viewportFrame.scale,
+                      width: viewportFrame.width * viewportFrame.scale
+                    }
+                  : undefined
+              }
             >
               <div
                 className={cn(
-                  'absolute inset-0 flex bg-transparent',
+                  'absolute flex bg-transparent',
+                  viewportFrame ? 'left-0 top-0 origin-top-left' : 'inset-0',
                   (isRemoteHtml || !isWebPreview || loadError) && 'pointer-events-none opacity-0'
                 )}
                 ref={hostRef}
+                style={
+                  viewportFrame
+                    ? {
+                        height: viewportFrame.height,
+                        transform: `scale(${viewportFrame.scale})`,
+                        width: viewportFrame.width
+                      }
+                    : undefined
+                }
               />
             </div>
           </div>
