@@ -51,7 +51,7 @@ function poolChipState(provider: ModelOptionProvider, copy: ModelMenuTranslation
 
 /** A scan-first account list: each row shows its tightest live window as a bar, with exact
  *  remaining/reset beside it. Unknown and signed-out rows stay empty rather than looking full. */
-function PoolUsageTip({ accounts, copy }: { accounts: PoolAccountView[]; copy: ModelMenuTranslations }) {
+export function PoolUsageTip({ accounts, copy }: { accounts: PoolAccountView[]; copy: ModelMenuTranslations }) {
   return (
     <span className="grid w-60 gap-2 py-0.5">
       {accounts.map((entry, index) => {
