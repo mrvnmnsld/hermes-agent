@@ -704,7 +704,15 @@ export function PlanLimitLine({ className, provider }: { className?: string; pro
   )
 }
 
-function PlanUsageSummary({ provider, usage }: { provider: ModelOptionProvider; usage: PlanUsage }) {
+export function PlanUsageSummary({
+  className,
+  provider,
+  usage
+}: {
+  className?: string
+  provider: ModelOptionProvider
+  usage: PlanUsage
+}) {
   const { t } = useI18n()
   const copy = t.modelPicker
 
@@ -718,7 +726,7 @@ function PlanUsageSummary({ provider, usage }: { provider: ModelOptionProvider; 
   const limited = planLimit(provider) !== null
 
   return (
-    <div className="px-6 pb-2 pt-0.5 text-[0.62rem] leading-relaxed text-muted-foreground">
+    <div className={cn('px-6 pb-2 pt-0.5 text-[0.62rem] leading-relaxed text-muted-foreground', className)}>
       <div className="flex flex-col gap-0.5">
         {limited ? (
           <PlanLimitLine provider={provider} />
