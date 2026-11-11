@@ -814,9 +814,9 @@ function Sash({
         // Grab band lives entirely in the trailing pane. A 1px overlap into
         // the leading pane (the previous asymmetric band) still stole the
         // Windows overlay-scrollbar hit target on the chat — only ~3px of
-        // thumb remained clickable (#99867). The sash stays 8px wide, all
-        // on the sidebar/tool side of the seam.
-        horizontal ? 'inset-y-0 left-0 w-[8px]' : 'inset-x-0 top-0 h-[8px]',
+        // thumb remained clickable (#99867). The sash stays slimmer (--ui-sash-size),
+        // all on the sidebar/tool side of the seam.
+        horizontal ? 'inset-y-0 left-0 w-(--ui-sash-size)' : 'inset-x-0 top-0 h-(--ui-sash-size)',
         disabled ? 'pointer-events-none' : horizontal ? 'cursor-col-resize' : 'cursor-row-resize'
       )}
       data-sash-overlap="trailing"
@@ -839,8 +839,8 @@ function Sash({
           className={cn(
             'absolute bg-(--ui-sash-hover-border) opacity-0 transition-opacity duration-100 group-hover:opacity-100',
             horizontal
-              ? 'inset-y-0 left-[1px] w-(--vscode-sash-hover-size,0.25rem) -translate-x-1/2'
-              : 'inset-x-0 top-[1px] h-(--vscode-sash-hover-size,0.25rem) -translate-y-1/2'
+              ? 'inset-y-0 left-[1px] w-(--vscode-sash-hover-size) -translate-x-1/2'
+              : 'inset-x-0 top-[1px] h-(--vscode-sash-hover-size) -translate-y-1/2'
           )}
         />
       )}
