@@ -76,6 +76,7 @@ import { usePreviewGuestOffscreen } from './preview-guest-offscreen'
 import { type PreviewInputEvent } from './preview-input'
 import { PREVIEW_BROWSER_ATTR, registerPreviewNav } from './preview-nav'
 import { registerPreviewPageReader } from './preview-reader'
+import { type ViewportPreset, viewportWidthOf } from './preview-viewport'
 import { RealProfileConsentDialog } from './real-profile-consent-dialog'
 
 type PreviewWebview = HTMLElement &
@@ -306,6 +307,7 @@ export function PreviewPane({
   const consoleOpen = useStore(consoleState.$open)
   const selectedStoredSessionId = useStore($selectedStoredSessionId)
   const [currentUrl, setCurrentUrl] = useState(target.url)
+  const [viewportPreset, setViewportPreset] = useState<ViewportPreset>('fit')
   const liveUrlRef = useRef(currentUrl)
   liveUrlRef.current = currentUrl
   // The guest-creation effect below deliberately omits target.url from its
@@ -376,6 +378,8 @@ export function PreviewPane({
   const webSurface = webPreviewSurface(isWebPreview, isRemoteHtml)
   const usesBrowserIframe = webSurface === 'iframe'
   const usesWebview = webSurface === 'webview'
+  // CSS px width the guest is constrained to (device frame); `null` = fill the pane.
+  const viewportWidth = viewportWidthOf(viewportPreset)
 
   const remoteHtmlDocument = useMemo(
     () => (isRemoteHtml ? remoteHtmlPreviewDocument(target.dataUrl!) : null),
@@ -1499,7 +1503,9 @@ export function PreviewPane({
             onToggleAnnotate={toggleAnnotate}
             onToggleConsole={() => consoleState.setOpen(open => !open)}
             onToggleDevTools={toggleDevTools}
+            onViewportChange={setViewportPreset}
             url={currentUrl}
+            viewportPreset={viewportPreset}
           />
         )}
 
@@ -1511,13 +1517,36 @@ export function PreviewPane({
           className="pointer-events-auto relative min-h-0 flex-1 overflow-hidden bg-transparent"
           ref={previewContentRef}
         >
+          {/* Display-mode device frame: centers the guest and caps its CSS layout
+              width when a preset is active, so responsive breakpoints fire
+              without resizing the pane. "Fit" applies no constraint (exact prior
+              geometry). Additive only — the annotate and console overlays are
+              untouched and still span the full pane. The outer stage scrolls
+              internally (NOT previewContentRef, which would carry the console;
+              see plan §9.2), so a wide 1080p frame pans without moving overlays. */}
           <div
             className={cn(
-              'absolute inset-0 flex bg-transparent',
-              (isRemoteHtml || !isWebPreview || loadError) && 'pointer-events-none opacity-0'
+              'absolute inset-0 overflow-auto',
+              viewportWidth !== null && 'bg-(--ui-editor-surface-background)'
             )}
-            ref={hostRef}
-          />
+          >
+            <div
+              className={cn(
+                'relative h-full',
+                viewportWidth !== null &&
+                  'mx-auto shrink-0 overflow-hidden rounded-[0.5rem] border border-border/60 bg-white shadow-lg'
+              )}
+              style={viewportWidth !== null ? { width: viewportWidth } : undefined}
+            >
+              <div
+                className={cn(
+                  'absolute inset-0 flex bg-transparent',
+                  (isRemoteHtml || !isWebPreview || loadError) && 'pointer-events-none opacity-0'
+                )}
+                ref={hostRef}
+              />
+            </div>
+          </div>
           {isRemoteHtml && (
             <PreviewDocumentFrame
               className="absolute inset-0 size-full border-0 bg-white"

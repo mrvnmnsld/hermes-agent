@@ -18,12 +18,22 @@ import { useEffect, useState } from 'react'
 
 import { Codicon } from '@/components/ui/codicon'
 import { CopyButton } from '@/components/ui/copy-button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { PaneStripGlyph } from '@/components/ui/pane-tab'
 import { useI18n } from '@/i18n'
 import { isSubmitEnter } from '@/lib/ime'
 import { ANNOTATE_BLUE } from '@/lib/preview-annotate'
 import { cn } from '@/lib/utils'
+
+import { VIEWPORT_PRESETS, type ViewportPreset } from './preview-viewport'
 
 interface PreviewBrowserBarProps {
   annotateMode?: boolean
@@ -49,6 +59,11 @@ interface PreviewBrowserBarProps {
   /** The page's CURRENT address (it moves as the user navigates), not the
    *  target the tab was opened with. */
   url: string
+  /** The active display-mode preset; `'fit'` fills the pane (no constraint).
+   *  Only meaningful when `onViewportChange` is provided. */
+  viewportPreset?: ViewportPreset
+  /** Fired when the user picks a display-mode preset. Omit to hide the control. */
+  onViewportChange?: (preset: ViewportPreset) => void
 }
 
 /**
@@ -116,10 +131,23 @@ export function PreviewBrowserBar({
   onToggleAnnotate,
   onToggleConsole,
   onToggleDevTools,
-  url
+  onViewportChange,
+  url,
+  viewportPreset = 'fit'
 }: PreviewBrowserBarProps) {
   const { t } = useI18n()
   const copy = t.preview.web
+
+  // Human names for the display-mode presets (i18n-sourced, never hardcoded).
+  const displayModeLabel: Record<ViewportPreset, string> = {
+    fit: copy.displayModeFit,
+    'phone-small': copy.displayModeSmallPhone,
+    phone: copy.displayModePhone,
+    'phone-large': copy.displayModeLargePhone,
+    tablet: copy.displayModeTablet,
+    laptop: copy.displayModeLaptop,
+    'fhd-1080p': copy.displayModeFhd1080p
+  }
   // Null while the field is idle, so the address tracks navigation on its own;
   // a string once the user takes it over, so typing survives a page load.
   const [draft, setDraft] = useState<null | string>(null)
@@ -264,6 +292,41 @@ export function PreviewBrowserBar({
           label={t.preview.openInBrowser}
           onSelect={onOpenExternal}
         />
+      ) : null}
+      {onViewportChange ? (
+        /* Display-mode picker: a dismissible, off-by-default preset list. Each
+           preset re-renders the page at a fixed CSS width so responsive
+           breakpoints fire; "Fit" is the fill-the-pane / off state. */
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              aria-label={copy.displayMode}
+              aria-pressed={viewportPreset !== 'fit'}
+              className="flex size-6 cursor-pointer items-center justify-center self-center rounded-[4px] bg-transparent text-(--ui-text-secondary) whitespace-nowrap opacity-60 transition-all duration-100 select-none [-webkit-app-region:no-drag] focus-visible:outline-hidden focus-visible:ring-ring/50 focus-visible:ring-[0.1875rem] hover:bg-(--chrome-action-hover) hover:text-(--ui-text-primary) hover:opacity-100 data-[state=open]:opacity-100"
+              type="button"
+            >
+              <Codicon name={viewportPreset === 'fit' ? 'screen-full' : 'device-mobile'} size="0.8125rem" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={4}>
+            <DropdownMenuRadioGroup
+              aria-label={copy.displayMode}
+              onValueChange={value => onViewportChange(value as ViewportPreset)}
+              value={viewportPreset}
+            >
+              {VIEWPORT_PRESETS.map(preset => (
+                <DropdownMenuRadioItem key={preset.id} value={preset.id}>
+                  <span>{displayModeLabel[preset.id]}</span>
+                  {preset.width !== null && preset.height !== null && (
+                    <DropdownMenuShortcut>
+                      {copy.displayModeDimensions(preset.width, preset.height)}
+                    </DropdownMenuShortcut>
+                  )}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : null}
       <PaneStripGlyph
         active={consoleOpen}

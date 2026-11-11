@@ -54,5 +54,14 @@ export const enPreviewWeb: Translations['preview']['web'] = {
   commentPlaceholder: 'Add a comment...',
   commentTitle: n => `Comment ${n}`,
   saveComment: 'Save',
-  cancelComment: 'Cancel comment'
+  cancelComment: 'Cancel comment',
+  displayMode: 'Display mode',
+  displayModeFit: 'Fit',
+  displayModeSmallPhone: 'Small phone',
+  displayModePhone: 'Phone',
+  displayModeLargePhone: 'Large phone',
+  displayModeTablet: 'Tablet',
+  displayModeLaptop: 'Laptop',
+  displayModeFhd1080p: '1080p',
+  displayModeDimensions: (width, height) => `${width} × ${height}`
 }
