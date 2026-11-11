@@ -3822,6 +3822,15 @@ export interface Translations extends NoticeTranslations {
       commentTitle: (n: number) => string
       saveComment: string
       cancelComment: string
+      displayMode: string
+      displayModeFit: string
+      displayModeSmallPhone: string
+      displayModePhone: string
+      displayModeLargePhone: string
+      displayModeTablet: string
+      displayModeLaptop: string
+      displayModeFhd1080p: string
+      displayModeDimensions: (width: number, height: number) => string
     }
   }
 
