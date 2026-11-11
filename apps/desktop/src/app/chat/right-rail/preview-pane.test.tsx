@@ -5,7 +5,7 @@ import { onComposerAttachImagesRequest } from '@/app/chat/composer/focus'
 import { PANE_HIDDEN_ATTR, PaneVisibleContext } from '@/components/pane-shell/pane-visibility'
 import { setTreePaneParked } from '@/components/pane-shell/tree/parked-panes'
 import { $rightRailActiveTabId } from '@/store/layout'
-import { $previewTabs, closeRightRail, openPreview, previewTabId } from '@/store/preview'
+import { $previewTabs, closeRightRail, openPreview, previewTabId, requestAnnotateToggle } from '@/store/preview'
 import { $connection, $selectedStoredSessionId } from '@/store/session'
 
 import { PreviewTilePane } from './preview'
@@ -562,6 +562,66 @@ describe('PreviewPane console state', () => {
     })
     await waitFor(() => expect(rendered.queryByRole('form', { name: 'Comment 2' })).toBeNull())
     expect(rendered.queryByRole('button', { name: 'Add 1 comment' })).toBeNull()
+    window.hermesDesktop = previousDesktop
+  })
+
+  // ⌘⇧D (#annotate-shortcut): the keybind trips the annotate request signal in
+  // store/preview; a live webview pane listens and enters Comment Mode exactly
+  // like the browser-bar comment button (COMMENTING pill appears).
+  it('enters Comment Mode when the annotate toggle request signal fires', async () => {
+    const previousDesktop = window.hermesDesktop
+
+    window.hermesDesktop = {
+      ...previousDesktop,
+      beginPreviewGuestActivity: vi.fn(async () => 9),
+      endPreviewGuestActivity: vi.fn(async () => {}),
+      executePreviewGuestScript: vi.fn(async (_token, code) =>
+        (webview.executeJavaScript as (source: string) => Promise<unknown>)(code)
+      )
+    }
+
+    let rendered!: ReturnType<typeof render>
+    await act(async () => {
+      rendered = render(
+        <PreviewPane
+          target={{ kind: 'url', label: 'Preview', source: 'http://localhost:5174', url: 'http://localhost:5174' }}
+        />
+      )
+    })
+
+    const webview = rendered.container.querySelector('webview') as HTMLElement & Record<string, unknown>
+    // The annotate overlay awaits real guest events; mirror the existing
+    // annotate test's `.wait()` mock so `startAnnotate`'s loop gets a concrete
+    // event (a no-draft reposition is a safe no-op) instead of `undefined`,
+    // which would throw `event.type` and leak an unhandled rejection.
+    let waitCount = 0
+    Object.assign(webview, {
+      executeJavaScript: vi.fn(async (code: string) => {
+        if (code.includes('.wait()')) {
+          waitCount += 1
+
+          if (waitCount === 1) {
+            return { type: 'reposition', rect: { x: 0, y: 0, width: 20, height: 20 } }
+          }
+
+          return new Promise<never>(() => {})
+        }
+
+        return undefined
+      }),
+      getWebContentsId: () => 9
+    })
+
+    expect(rendered.container.querySelector('[data-annotate-status="commenting"]')).toBeNull()
+
+    act(() => {
+      requestAnnotateToggle()
+    })
+
+    await waitFor(() =>
+      expect(rendered.container.querySelector('[data-annotate-status="commenting"]')).not.toBeNull()
+    )
+
     window.hermesDesktop = previousDesktop
   })
 

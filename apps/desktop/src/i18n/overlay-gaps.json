@@ -877,6 +877,7 @@
   "keybinds.actions.view.tabSlot.9": ["ar","ja","ru","zh","zh-hant"],
   "keybinds.actions.view.terminalCopy": ["ja","zh-hant"],
   "keybinds.actions.view.terminalPaste": ["ja","zh-hant"],
+  "keybinds.actions.view.toggleAnnotate": ["ja","zh-hant"],
   "keybinds.actions.view.toggleHud": ["ar","ja","zh","zh-hant"],
   "keybinds.actions.view.toggleProfileRail": ["ar","ja","zh-hant"],
   "keybinds.actions.view.toggleReview": ["ja","zh-hant"],

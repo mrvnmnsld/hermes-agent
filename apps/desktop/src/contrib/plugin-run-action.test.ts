@@ -10,10 +10,13 @@ vi.mock('@/themes/context', () => ({
 // The browser toggle is the handler the shortcut runs; spy on it so the test
 // can tell "the plugin ran the same handler" from "something else happened".
 const toggleBrowserTab = vi.hoisted(() => vi.fn())
+// Same for the annotate toggle's signal bridge (store/preview).
+const requestAnnotateToggle = vi.hoisted(() => vi.fn())
 
 vi.mock('@/store/preview', async importOriginal => ({
   ...(await importOriginal<object>()),
-  toggleBrowserTab
+  toggleBrowserTab,
+  requestAnnotateToggle
 }))
 
 import { useKeybinds } from '@/app/hooks/use-keybinds'
@@ -51,6 +54,7 @@ let unmount: (() => void) | undefined
 
 beforeEach(() => {
   toggleBrowserTab.mockClear()
+  requestAnnotateToggle.mockClear()
   Object.values(deps).forEach(fn => 'mockClear' in fn && fn.mockClear())
   resetAllBindings()
   unmount = renderHook(() => useKeybinds(deps), { wrapper }).unmount
@@ -72,6 +76,19 @@ describe('ctx.runAction — plugins run built-in app actions', () => {
 
     expect(ctx.runAction('view.showBrowser')).toEqual({ ok: true })
     expect(toggleBrowserTab).toHaveBeenCalledTimes(2)
+  })
+
+  // ⌘⇧D (#annotate-shortcut): the annotate action defaults to mod+shift+d and
+  // its handler (requestAnnotateToggle) is what both the key and the plugin
+  // run — that in turn is what the preview pane subscribes to.
+  it('runs view.toggleAnnotate from ⌘⇧D and from a plugin runAction', () => {
+    const ctx = createPluginContext('annotate-shortcut')
+
+    pressModShift('d')
+    expect(requestAnnotateToggle).toHaveBeenCalledTimes(1)
+
+    expect(ctx.runAction('view.toggleAnnotate')).toEqual({ ok: true })
+    expect(requestAnnotateToggle).toHaveBeenCalledTimes(2)
   })
 
   it('is unaffected by rebinding or unbinding the shortcut', () => {

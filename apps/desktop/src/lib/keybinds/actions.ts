@@ -237,6 +237,11 @@ export const KEYBIND_ACTIONS: readonly KeybindActionMeta[] = [
   // ⌘⇧L — "L" for location, the address-bar chord every browser shares. Plain
   // ⌘L is the terminal's selection shortcut, hence the shift.
   { id: 'view.showBrowser', category: 'view', defaults: ['mod+shift+l'] },
+  // ⌘⇧D — "d" for... the comment glyph. Toggles Comment Mode in the open web
+  // preview (drop numbered comment pins, flush them back into the chat). Same
+  // behaviour as the browser bar's comment button; a no-op with no annotate-able
+  // page, mirroring the button's `annotateNeedPage` warning.
+  { id: 'view.toggleAnnotate', category: 'view', defaults: ['mod+shift+d'] },
   // ⌘⇧H — "h" for HUD. Enters/leaves the chrome-free floating chat: the app
   // window steps aside and a composer + live reply float over whatever the
   // user is working in. Ships bound because the whole point is leaving the app
@@ -288,6 +293,7 @@ export const KEYBIND_ACTION_IDS: readonly string[] = KEYBIND_ACTIONS.map(action 
 export const PLUGIN_APP_ACTIONS = [
   // Panels and layout
   'view.showBrowser',
+  'view.toggleAnnotate',
   'view.showFiles',
   'view.toggleSidebar',
   'view.toggleRightSidebar',

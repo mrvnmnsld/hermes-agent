@@ -610,6 +610,7 @@ export const deOverrides = {
       'view.toggleSimpleMode': 'Einfachen Modus umschalten',
       'view.showFiles': 'Dateibrowser anzeigen',
       'view.showBrowser': 'Browser umschalten',
+      'view.toggleAnnotate': 'Anmerkungen umschalten',
       'view.toggleHud': 'HUD-Modus umschalten',
       'hud.snapToPointer': 'HUD zum Zeiger bewegen (global, während HUD offen ist)',
       'view.showTerminal': 'Terminal umschalten',

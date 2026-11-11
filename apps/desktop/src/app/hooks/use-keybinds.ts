@@ -52,7 +52,7 @@ import {
   toggleSidebarOpen
 } from '@/store/layout'
 import { notifyError } from '@/store/notifications'
-import { toggleBrowserTab } from '@/store/preview'
+import { requestAnnotateToggle, toggleBrowserTab } from '@/store/preview'
 import {
   $newChatProfile,
   cycleProfile,
@@ -359,6 +359,10 @@ export function useKeybinds(deps: KeybindRuntimeDeps): void {
     'view.toggleTabStrip': () => void toggleTargetZoneTabStrip(),
     'view.showFiles': showFiles,
     'view.showBrowser': toggleBrowserTab,
+    // ⌘⇧D: bridge to the preview pane's Comment Mode toggle via the request
+    // signal (store/preview), so the key leaves the pane's component-local
+    // state untouched and just trips the counter.
+    'view.toggleAnnotate': requestAnnotateToggle,
     'view.toggleHud': () => toggleHud(hudTargetSessionId()),
     'view.showTerminal': () => toggleTerminalPane(),
     // Create first so the pane's open-effect ensure sees a non-empty set and
