@@ -93,6 +93,38 @@ describe('KEYBIND_ACTIONS', () => {
     expect(voice).not.toContain(canonicalizeCombo('mod+b'))
   })
 
+  it('registers view.toggleAnnotate on Ctrl/Cmd+Shift+D and claims no taken chord (#annotate-shortcut)', () => {
+    const id = 'view.toggleAnnotate'
+    const chord = canonicalizeCombo('mod+shift+d')
+
+    expect(KEYBIND_ACTIONS.filter(action => action.id === id)).toHaveLength(1)
+    expect(keybindAction(id)).toMatchObject({ category: 'view', defaults: ['mod+shift+d'] })
+    expect(defaultBindings()[id]).toEqual(['mod+shift+d'])
+    expect(en.keybinds.actions[id]).toBe('Toggle annotate')
+
+    // mod+shift+d must be unclaimed by every other shipped binding so the
+    // shortcuts panel flags no conflict.
+    const taken = new Set<string>()
+
+    for (const action of KEYBIND_ACTIONS) {
+      if (action.id === id) {
+        continue
+      }
+
+      for (const combo of action.defaults) {
+        taken.add(canonicalizeCombo(combo))
+      }
+    }
+
+    for (const shortcut of KEYBIND_READONLY) {
+      for (const combo of shortcut.keys) {
+        taken.add(canonicalizeCombo(combo))
+      }
+    }
+
+    expect(taken.has(chord)).toBe(false)
+  })
+
   it('points Voice settings hints at the voice conversation action, not dictation', () => {
     const englishVoice = en.keybinds.actions['composer.voice']
 

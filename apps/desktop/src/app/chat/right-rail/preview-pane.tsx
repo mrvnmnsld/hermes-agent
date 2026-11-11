@@ -34,6 +34,7 @@ import { rafCoalesce } from '@/lib/raf-coalesce'
 import { cn } from '@/lib/utils'
 import { notify, notifyError } from '@/store/notifications'
 import {
+  $annotateToggleRequest,
   $browserPages,
   $previewServerRestart,
   commitBrowserTabLocation,
@@ -685,6 +686,23 @@ export function PreviewPane({
       void startAnnotate()
     }
   }, [startAnnotate, stopAnnotate])
+
+  // ⌘⇧D (mod+shift+d) → Comment Mode. The keybind dispatcher only trips the
+  // request counter in store/preview; this pane subscribes and calls the same
+  // `toggleAnnotate` as the browser-bar button. Gated to webview surfaces (the
+  // only panes that render the comment button) so a file/source/HTML-iframe
+  // preview lets the press fall through as a no-op — matching the button,
+  // which simply is not visible there. `startAnnotate` already warns
+  // `annotateNeedPage` when a webview has no guest, so no extra guard.
+  useEffect(() => {
+    if (!usesWebview) {
+      return
+    }
+
+    return $annotateToggleRequest.listen(() => {
+      toggleAnnotate()
+    })
+  }, [toggleAnnotate, usesWebview])
 
   const appendConsoleEntry = useCallback(
     (entry: Omit<ConsoleEntry, 'id'>) => {

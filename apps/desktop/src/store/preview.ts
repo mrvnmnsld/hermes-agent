@@ -1270,6 +1270,16 @@ export function requestPreviewReload() {
   $previewReloadRequest.set($previewReloadRequest.get() + 1)
 }
 
+/** Monotonic request counter bridging the mod+shift+d keybind (use-keybinds)
+ *  to the preview pane's component-local Comment Mode toggle. The pane that
+ *  is a live web preview subscribes and calls its `toggleAnnotate()` on every
+ *  increment; a no-annotate-able surface simply never fires. */
+export const $annotateToggleRequest = atom(0)
+
+export function requestAnnotateToggle() {
+  $annotateToggleRequest.set($annotateToggleRequest.get() + 1)
+}
+
 export function beginPreviewServerRestart(taskId: string, url: string) {
   $previewServerRestart.set({ status: 'running', taskId, url })
 }

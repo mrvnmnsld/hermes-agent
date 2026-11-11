@@ -613,6 +613,7 @@ export const esOverrides = {
       'view.toggleSimpleMode': 'Activar o desactivar el modo simple',
       'view.showFiles': 'Mostrar explorador de archivos',
       'view.showBrowser': 'Alternar navegador',
+      'view.toggleAnnotate': 'Alternar anotaciones',
       'view.toggleHud': 'Alternar modo HUD',
       'hud.snapToPointer': 'Mover HUD al puntero (global, mientras el HUD esté abierto)',
       'view.showTerminal': 'Mostrar terminal',
